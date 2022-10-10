@@ -11,6 +11,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.IMUTelemetry;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,7 +30,7 @@ public class MecanumDriveChassis
   private DcMotor rightRearDrive = null;
 
   private BNO055IMU imu;
-  private static IMUTelemetry IMUTelemetry;
+  private static org.firstinspires.ftc.teamcode.IMUTelemetry IMUTelemetry;
   private Orientation angles; // stores the current orientation of the bot from the IMU
 
   // a timer for the various automation activities.
