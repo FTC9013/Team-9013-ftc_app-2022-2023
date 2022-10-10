@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 
+import static java.lang.Math.abs;
+import static java.lang.Thread.sleep;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -16,9 +19,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
-
-import static java.lang.Math.abs;
-import static java.lang.Thread.sleep;
 
 public class MecanumDriveChassis
 {
