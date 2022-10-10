@@ -58,12 +58,14 @@ public class MecanumDriveChassis
   private static double desiredHeading;  // rotates about the Z axis [0,2PI) rad.
   private static double currentHeading;  // rotates about the Z axis [0,2PI) rad.
 
+  /*
   // keeps track of the drive plan state
   private Queue<Leg> plan;
   private Leg currentLeg;
   private boolean drivingAPlan = false;
   private enum DriveState {IDLE, DRIVING, TURNING}
   private DriveState driveState = DriveState.IDLE;
+*/
 
   // Robot speed scaling factor (% of joystick input to use)
   // applied uniformly across all joystick inputs to the JoystickToMotion() method.
@@ -273,7 +275,7 @@ public class MecanumDriveChassis
 
     // the bot is not currently driving an active leg so if there is another one in the plan,
     // start it, otherwise the plan is done.
-    if( drivingAPlan )
+   /* if( drivingAPlan )
     {
       switch (driveState)
       {
@@ -297,6 +299,8 @@ public class MecanumDriveChassis
       vD = 0;
       thetaD = 0;
     }
+
+    */
 
     // Math out what to send to the motors and send it.
     // keeps sending even at stop.  ( 0 power to wheels )
@@ -401,6 +405,7 @@ public class MecanumDriveChassis
 
   // Set up a new drive plan (list of drive legs)
   // Must be called from the opmode to initiate a drive plan
+  /*
   void startPlan(Queue<Leg> newPlan )
   {
     if( newPlan.size() !=0 && !drivingAPlan )
@@ -410,8 +415,8 @@ public class MecanumDriveChassis
       driveState = DriveState.IDLE;
     }
   }
-
-
+*/
+/*
   // execute a path (list of drive legs)
   boolean nextLeg()
   {
@@ -450,12 +455,12 @@ public class MecanumDriveChassis
     }
     return drivingAPlan;
   }
-
+/*
   /** Must be called from main loop repeatedly and quickly to stop the motors when the
    * drive time is reached.
    * Timer is reset to zero at the start of each leg.
    **/
-   void Driving()
+   /*void Driving()
    {
      if (driveTimer.time() > driveTime)
      {
@@ -464,7 +469,7 @@ public class MecanumDriveChassis
        thetaD = 0;
        driveState = DriveState.IDLE;
      }
-   }
+   }*/
 
 
   //Must be called from main loop repeatedly to know when the turn is completed.
@@ -473,7 +478,7 @@ public class MecanumDriveChassis
     // check if close enough on either side of target value.
     if (abs(currentHeading - desiredHeading) < closeEnoughHeading)
     {
-      driveState = DriveState.IDLE;
+    //  driveState = DriveState.IDLE;
     }
   }
 
@@ -481,7 +486,7 @@ public class MecanumDriveChassis
   void driveForward(double speed, double seconds)
   {
     driveTime = seconds;
-    driveState = DriveState.DRIVING;
+   // driveState = DriveState.DRIVING;
     vD = speed/.707;  // divide by 0.707 because thetaD is 0 and we want to range full speed.
     driveTimer.reset();
     thetaD = 0;     // no translation, currentHeading still valid (assumed)
@@ -491,7 +496,7 @@ public class MecanumDriveChassis
   void driveBackwards(double speed, double seconds)
   {
     driveTime = seconds;
-    driveState = DriveState.DRIVING;
+   // driveState = DriveState.DRIVING;
     vD = -speed/.707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
     driveTimer.reset();
     thetaD = 0;      // no translation, currentHeading still valid (assumed)
@@ -501,7 +506,7 @@ public class MecanumDriveChassis
   void strafeLeft(double speed, double seconds)
   {
     driveTime = seconds;
-    driveState = DriveState.DRIVING;
+   // driveState = DriveState.DRIVING;
     vD = -speed/.707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
     driveTimer.reset();
     thetaD = -Math.PI/2;   // translation angle
@@ -511,7 +516,7 @@ public class MecanumDriveChassis
   void strafeRight(double speed, double seconds)
   {
     driveTime = seconds;
-    driveState = DriveState.DRIVING;
+   // driveState = DriveState.DRIVING;
     vD = -speed/.707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
     driveTimer.reset();
     thetaD = Math.PI/2;   // translation angle
@@ -520,13 +525,14 @@ public class MecanumDriveChassis
 
   void turnToAbsoluteAngle(double newDesiredHeading)
   {
-    driveState = DriveState.TURNING;
+ //   driveState = DriveState.TURNING;
     this.desiredHeading = newDesiredHeading / 180 * Math.PI;  // convert to RADIANS
   }
 
   public boolean isDriving()
   {
-    return this.drivingAPlan;
+  //  return this.drivingAPlan;
+    return true;
   }
 
 
