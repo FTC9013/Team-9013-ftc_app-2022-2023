@@ -11,7 +11,7 @@ public class TeleOpPrimary extends LinearOpMode
 {
   // Declare OpMode members.
   private MecanumDriveChassis driveChassis;
-  private ManipulatorPlatform manipulatorPlatform;
+ // private ManipulatorPlatform manipulatorPlatform;
   //private LEDs leds;
   
   enum keyOwner { RIGHT, LEFT, NONE };
@@ -39,7 +39,7 @@ public class TeleOpPrimary extends LinearOpMode
     
 
     driveChassis = new MecanumDriveChassis(hardwareMap);
-    manipulatorPlatform = new ManipulatorPlatform(hardwareMap);
+   // manipulatorPlatform = new ManipulatorPlatform(hardwareMap);
     //leds = new LEDs(hardwareMap);
     //leds.goOff();
 
@@ -55,7 +55,8 @@ public class TeleOpPrimary extends LinearOpMode
     runtime.reset();
     //leds.goConfetti();  // start the LEDs in confetti
   
-    driveChassis.setSpeedScale(manipulatorPlatform.lowSpeed);
+   // driveChassis.setSpeedScale(manipulatorPlatform.lowSpeed);
+    driveChassis.setSpeedScale(0.5);
     // run until the end of the match (driver presses STOP)
     while (opModeIsActive())
     {
@@ -76,13 +77,15 @@ public class TeleOpPrimary extends LinearOpMode
       // provide a throttle capability to run the bot at one of two speeds.
         if (gamepad1.right_bumper && !goingFast && !goingFastToggle)  // Go fast
         {
-          driveChassis.setSpeedScale(manipulatorPlatform.highSpeed);
+          driveChassis.setSpeedScale(1.0);
+         // driveChassis.setSpeedScale(manipulatorPlatform.highSpeed);
           goingFast = true;
           goingFastToggle = true;
         }
         if (gamepad1.right_bumper && goingFast && !goingFastToggle)
         {
-          driveChassis.setSpeedScale(manipulatorPlatform.lowSpeed);
+         // driveChassis.setSpeedScale(manipulatorPlatform.lowSpeed);
+          driveChassis.setSpeedScale(0.5);
           goingFast = false;
           goingFastToggle = true;
         }
@@ -96,7 +99,7 @@ public class TeleOpPrimary extends LinearOpMode
         
         
         
-        if(gamepad2.right_bumper && owner == keyOwner.NONE)
+       /* if(gamepad2.right_bumper && owner == keyOwner.NONE)
         {
           manipulatorPlatform.setSpinnerPower(1);
           owner = keyOwner.RIGHT;
@@ -109,12 +112,12 @@ public class TeleOpPrimary extends LinearOpMode
         {
           manipulatorPlatform.setSpinnerPower(0);
           owner = keyOwner.NONE;
-        }
+        }*/
         
         
         
         
-        if(gamepad2.left_bumper && owner == keyOwner.NONE)
+        /*if(gamepad2.left_bumper && owner == keyOwner.NONE)
         {
           manipulatorPlatform.setSpinnerPower(-1);
           owner = keyOwner.LEFT;
@@ -127,25 +130,25 @@ public class TeleOpPrimary extends LinearOpMode
         {
           manipulatorPlatform.setSpinnerPower(0);
           owner = keyOwner.NONE;
-        }
+        }*/
   
   
 
         
         
-        /*
+
         eventTimer.reset();
         while (opModeIsActive() && eventTimer.time() < 0.5)
         {
           driveChassis.autoDrive(telemetry);
         }
         //manipulatorPlatform.shooterExtend(shooterRetract);
-        */
+
       
       
       // ***************************
       // Second seat...  controls (game pad 2)
-
+/*
 // D‐PAD – Controls
       if (gamepad2.dpad_down)
       {
@@ -180,7 +183,7 @@ public class TeleOpPrimary extends LinearOpMode
       if(gamepad2.x)
       {
         manipulatorPlatform.invertGatherDropper();
-      }
+      }*/
 /*      // provide a
       if (gamepad1.right_trigger > 0.5 && gamepad1.left_trigger > 0.5  )  //
       {

@@ -18,7 +18,8 @@ import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.RADI
 
 public class ManipulatorPlatform
 {
-  private DcMotorEx spinnerMotor = null;
+
+ /* private DcMotorEx spinnerMotor = null;
   private DcMotorEx armMotor = null;
   private DcMotorEx gathererMotor = null;
   
@@ -67,14 +68,14 @@ public class ManipulatorPlatform
     armMotor.setTargetPosition(0);
     armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     armMotor.setPower(0.4);
-    /*
+    *//*
     spinnerMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "spinnerMotor");
     spinnerMotor.setDirection(DcMotor.Direction.REVERSE);
     PIDFCoefficients spinnerPIDNew = new PIDFCoefficients( spinnerP, spinnerI, spinnerD, spinnerF );
     spinnerMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER,spinnerPIDNew);
     spinnerMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     spinnerMotor.setVelocity(0, DEGREES);
-    */
+    *//*
     spinnerMotor = (DcMotorEx) hardwareMap.get(DcMotor.class, "spinnerMotor");
     spinnerMotor.setDirection(DcMotorSimple.Direction.REVERSE);
     spinnerMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -166,7 +167,7 @@ public class ManipulatorPlatform
     gatherDrop.setPosition(0);
   }
   
-  /*  void resetExtender()
+  *//*  void resetExtender()
   {
     boolean calFlag = true;
     extenderPosition(-200);
@@ -182,6 +183,6 @@ public class ManipulatorPlatform
     extenderMotor.setTargetPosition(0);
     extenderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     extenderMotor.setPower(1);
-  }*/
-
+  }*//*
+*/
 }
