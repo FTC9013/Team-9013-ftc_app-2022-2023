@@ -22,38 +22,38 @@ import java.util.Queue;
 
 public class MecanumDriveChassis
 {
- 
+  
   private DcMotor leftFrontDrive = null;
   private DcMotor leftRearDrive = null;
   private DcMotor rightFrontDrive = null;
   private DcMotor rightRearDrive = null;
-
+  
   private BNO055IMU imu;
   private static IMUTelemetry IMUTelemetry;
   private Orientation angles; // stores the current orientation of the bot from the IMU
-
+  
   // a timer for the various automation activities.
   private ElapsedTime driveTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
-
+  
   private static double leftFrontDriveSpeed;
   private static double leftRearDriveSpeed;
   private static double rightFrontDriveSpeed;
   private static double rightRearDriveSpeed;
-
+  
   // Robot speed [-1, 1].  (speed in any direction that is not rotational)
   // does not have any angular component, just scaler velocity.
   // combined with the angular component for motion.  Even if angle is 0 (forward).
   private static double vD = 0;
-
+  
   // Robot angle while moving [0, 2PI] or [0, +/-PI]. (angle to displace the center of the bot,
   // ASDF)
   // relative to the direction the bot is facing.
   private static double thetaD = 0;
-
+  
   // Speed component for rotation about the Z axis. [-x, x]
   // controlled by the error signal from the heading PID
-  private static double vTheta = 0;
-
+  private static double rotationalSpeed = 0;
+  
   // heading about a unit circle in radians.
   private static double desiredHeading;  // rotates about the Z axis [0,2PI) rad.
   private static double currentHeading;  // rotates about the Z axis [0,2PI) rad.
@@ -66,11 +66,11 @@ public class MecanumDriveChassis
   private enum DriveState {IDLE, DRIVING, TURNING}
   private DriveState driveState = DriveState.IDLE;
 */
-
+  
   // Robot speed scaling factor (% of joystick input to use)
   // applied uniformly across all joystick inputs to the JoystickToMotion() method.
   private double speedScale = 0;
-
+  
   // PID for the heading
   private final double propCoeff = 0.9;
   private final double integCoeff = 0.0;
@@ -80,27 +80,30 @@ public class MecanumDriveChassis
   private final double MaxIOutput = 1;
   private final double OutputRampRate = 0.1;
   private final double OutputFilter = 0;
-  private final double SetpointRange = 2*Math.PI;
-
+  private final double SetpointRange = 2 * Math.PI;
+  
   private final double headingThreshold = 0.05;  // threshold to accept joystick input to change angle.
   private final int headdingAverageNumberOfSamples = 5;
-
+  
   // number of encoder counts equal to one inch of forward travel
   //  private final int countsPerDriveInch = 5000/117;
-
+  
   // number of encoder counts equal to one inch of forward travel
   //  private  final int countsPerStrafeInch = 5000/51;
-
+  
   private final double closeEnoughHeading = 0.05;  // Radians to call angle close enough to target.
-
+  
   // how many seconds to run the motors for the current drive leg.
   private double driveTime = 0;
-
+  
   private PID headingPID = null;
   private RollingAverage averageHeading = null;
-
-  MecanumDriveChassis(HardwareMap hardwareMap)
+  private Telemetry telemetry;
+  
+  MecanumDriveChassis(HardwareMap hardwareMap, Telemetry theTelemetry)
   {
+    telemetry = theTelemetry;
+    
     // Initialize the hardware variables. Note that the strings used here as parameters
     // to 'get' must correspond to the names assigned during the robot configuration
     // step (using the FTC Robot Controller app on the phone).
@@ -108,103 +111,118 @@ public class MecanumDriveChassis
     leftRearDrive = hardwareMap.get(DcMotor.class, "lRear");
     rightFrontDrive = hardwareMap.get(DcMotor.class, "rFront");
     rightRearDrive = hardwareMap.get(DcMotor.class, "rRear");
-
+    
     // Get and initialize the IMU.
     imu = hardwareMap.get(BNO055IMU.class, "imu");
-
+    
     BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     IMUTelemetry = new IMUTelemetry();
-
+    
     // set the initial imu mode parameters.
     parameters.mode = BNO055IMU.SensorMode.IMU;
-    parameters.angleUnit           = BNO055IMU.AngleUnit.RADIANS;
-    parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-    parameters.loggingEnabled      = false;
-
+    parameters.angleUnit = BNO055IMU.AngleUnit.RADIANS;
+    parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+    parameters.loggingEnabled = false;
+    
     imu.initialize(parameters);
-
+    
     leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
+    
     // Motors on one side reversed to drive forward
     // Reverse the motor that runs backwards when connected directly to the battery
     // A positive power number should drive the robot forward regardless of the motor's
     // position on the robot.
-    leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-    leftRearDrive.setDirection(DcMotor.Direction.FORWARD);
-    rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-    rightRearDrive.setDirection(DcMotor.Direction.REVERSE);
-
+    leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+    leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
+    rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+    rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
+    
     RunUsingEncoders();
-
+    
     // set motion parameters.
     vD = 0;
     thetaD = 0;
-    vTheta = 0;
-
+    rotationalSpeed = 0;
+    
     // Set all the motor speeds.
     rightFrontDriveSpeed = 0;
     leftFrontDriveSpeed = 0;
     rightRearDriveSpeed = 0;
     leftRearDriveSpeed = 0;
-
+    
     rightFrontDrive.setPower(rightFrontDriveSpeed);
     leftFrontDrive.setPower(leftFrontDriveSpeed);
     rightRearDrive.setPower(rightRearDriveSpeed);
     leftRearDrive.setPower(leftRearDriveSpeed);
-
+    
     // make sure the gyro is calibrated before continuing
     while (!imu.isGyroCalibrated())
     {
-      try {
+      try
+      {
         sleep(50);
-      } catch (InterruptedException e) {
+      } catch (InterruptedException e)
+      {
         e.printStackTrace();
       }
     }
-  
+    
     // create and initialize the PID for the heading
     headingPID = new PID(propCoeff, integCoeff, diffCoeff);
-
+    
     // get the initial error and put valid data in the telemetry from the imu
     IMUAngleProcessing();
-
+    
     // set initial desired heading to the current actual heading.
     desiredHeading = currentHeading;
-
+    
     // smooths out the joystick input so it doesn't slam hi/lo
     averageHeading = new RollingAverage(headdingAverageNumberOfSamples);
-
+    
     // initially setup the PID parameters
-    headingPID.setOutputLimits( OutputLowLimit, OutputHighLimit);
+    headingPID.setOutputLimits(OutputLowLimit, OutputHighLimit);
     headingPID.setMaxIOutput(MaxIOutput);
     headingPID.setOutputRampRate(OutputRampRate);
     headingPID.setOutputFilter(OutputFilter);
     headingPID.setSetpointRange(SetpointRange);
-    headingPID.setContinousInputRange(2*Math.PI);
+    headingPID.setContinousInputRange(2 * Math.PI);
     headingPID.setContinous(true);  // lets PID know we are working with a continuous range [0-360)
   }
-
+  
   // Left  Y = forward, backward movement
   // Left  X = side to side (strafe)
   // Right X = rotate in place
-  void drive(float driveLeftY, float driveLeftX, float driveRightX, Telemetry telemetry)
+  void drive(float driveLeftY, float driveLeftX, float driveRightX, boolean goFast)
   {
-    telemetry.addData("Heading (rad) ", " %.4f", IMUTelemetry.heading );
-    telemetry.addData("Error (rad) ", " %.4f",IMUTelemetry.error );
-    telemetry.update();
-
+    //telemetry.addData("Heading (rad) ", " %.4f", IMUTelemetry.heading );
+    //telemetry.addData("Error (rad) ", " %.4f",IMUTelemetry.error );
+    //telemetry.update();
+    
     // calculate the vectors multiply input values by scaling factor for max speed.
-    joystickToMotion( driveLeftY * speedScale, driveLeftX * speedScale,
-        driveRightX * speedScale  );
-
+    joystickToMotion(driveLeftY * speedScale, driveLeftX * speedScale,
+      driveRightX * speedScale);
+    
+    if (goFast == false)
+    {
+      vD = (.0875 * vD);
+      rotationalSpeed = (.275 * rotationalSpeed);
+      telemetry.addData("goFast: ", "off");
+    } else if (goFast == true)
+    {
+      vD = (.175 * vD);
+      rotationalSpeed = (.325 * rotationalSpeed);
+    }
+    
+    telemetry.addData("Theta(Degrees)", thetaD);
+    //telemetry.addData("LStickY", gamepad1.left_stick_y*-1);
     // Math out what to send to the motors and send it.
     PowerToWheels();
   }
-
-
+  
+  
   /**
    * Process the joystick values into motion vector.
    *  Converts the left stick X, Y input into the translation angle and speed
@@ -217,36 +235,37 @@ public class MecanumDriveChassis
    *  thetaD = desired robot translation angle.
    *  vTheta = desired robot rotational speed.
    */
-  private void joystickToMotion( double leftStickY, double leftStickX, double rightStickX ) {
+  private void joystickToMotion(double leftStickY, double leftStickX, double rightStickX)
+  {
     // determines the translation speed by taking the hypotenuse of the vector created by
     // the X & Y components.
     vD = Math.min(Math.sqrt(Math.pow(leftStickX, 2) + Math.pow(-leftStickY, 2)), 1);
-
+    
     // Converts the joystick inputs from cartesian to polar from 0 to +/- PI oriented
     // with 0 to the right of the robot. (standard polar plot)
     thetaD = Math.atan2(-leftStickY, leftStickX);
     // orient to the robot by rotating PI/2 to make the joystick zero at the forward of bot.
     // instead of the right side.
-    thetaD = thetaD - Math.PI / 2;
+    //thetaD = thetaD - Math.PI / 2;
     // simply takes the right stick X value and invert to use as a rotational speed.
     // inverted since we want CW rotation on a positive value.
     // which is opposite of what PowerToWheels() wants in polar positive rotation (CCW).
-//    vTheta = -rightStickX;
-
+    rotationalSpeed = rightStickX;
+    
     // if there is new joystick input update the heading otherwise hold the current heading as
     // the setpoint.
     // headding is in radians so just using the +/- 1 from the joystick to add as a bias to the
     // current angle will put the desired head +/- 57 degrees from current.  This should be more
     // than enough to move the bot at max rotation speed.
     // The chasing of this setpoint is controled by the PID loop on the vTheta value.
-  
-  
-    averageHeading.add(rightStickX);  // average in the current stick value
-
+    
+    
+    //averageHeading.add(rightStickX);  // average in the current stick value
+    
     // if the averaged stick input is greater then the headingThreshold go ahead and adjust the heading.
     // This keeps from updating the desiredHeading value if no joystick input is being made.
     // Otherwise, it will always drive the desiredHeading to 0 (neutral joystick position)
-    if(Math.abs(averageHeading.getAverage()) > headingThreshold)
+    /*if(Math.abs(averageHeading.getAverage()) > headingThreshold)
     {
       desiredHeading = currentHeading - averageHeading.getAverage();
       // keep heading a positive angle
@@ -254,25 +273,25 @@ public class MecanumDriveChassis
       {
         desiredHeading += (2 * Math.PI);
       }
-    }
+    }*/
     // get the imu angles in the format we need.
-    IMUAngleProcessing();
-
+    // IMUAngleProcessing();
+    
     // PID controls the vTheta input to the wheel power equation.
-    // vTheta = headingPID.getOutput(currentHeading, desiredHeading );
+    //vTheta = headingPID.getOutput(currentHeading, desiredHeading );
   }
-
-
-  void autoDrive( Telemetry telemetry )
+  
+  
+  void autoDrive(Telemetry telemetry)
   {
 //    telemetry.addLine().addData("Heading (rad) ", " %.4f", IMUTelemetry.heading )
 //    .addData("Error (rad) ", " %.4f",IMUTelemetry.error );
 //    telemetry.addLine().addData("Counts ", " %d", rightFrontDrive.getCurrentPosition() );
 //    telemetry.update();
-
+    
     // always crunch the IMP data and work the PID to keep heading.
-    IMUAngleProcessing();
-
+    // IMUAngleProcessing();
+    
     // the bot is not currently driving an active leg so if there is another one in the plan,
     // start it, otherwise the plan is done.
    /* if( drivingAPlan )
@@ -301,13 +320,13 @@ public class MecanumDriveChassis
     }
 
     */
-
+    
     // Math out what to send to the motors and send it.
     // keeps sending even at stop.  ( 0 power to wheels )
-    PowerToWheels();
+    // PowerToWheels();
   }
-
-
+  
+  
   /**
    * Calculate the power settings and send to the wheels.  This also translates the force
    * for the Mecanum wheels to the rotated axis based on the degree of the wheel offset.
@@ -338,21 +357,142 @@ public class MecanumDriveChassis
    * thus a positive vTheta will turn the bot CCW about its Z axis.
    *
    **/
-  private void PowerToWheels() {
-
+  private void PowerToWheels()
+  {
+    
     // Motors power = Y component of directional vector
-    leftFrontDriveSpeed  = vD * Math.sin(-thetaD + Math.PI / 4) - vTheta;
-    rightRearDriveSpeed  = vD * Math.sin(-thetaD + Math.PI / 4) + vTheta;
-
+    //leftFrontDriveSpeed  = -1;//vD * Math.sin(-thetaD + Math.PI / 4) - vTheta
+    
+    //rightRearDriveSpeed  = -1;//vD * Math.sin(-thetaD + Math.PI / 4) + vTheta;
+    
     // Motors power = X component of directional vector
-    rightFrontDriveSpeed = vD * Math.cos(-thetaD + Math.PI / 4) + vTheta;
-    leftRearDriveSpeed   = vD * Math.cos(-thetaD + Math.PI / 4) - vTheta;
-
+    //rightFrontDriveSpeed = -1;//vD * Math.cos(-thetaD + Math.PI / 4) + vTheta;
+    //leftRearDriveSpeed   = -1;//vD * Math.cos(-thetaD + Math.PI / 4) - vTheta;
+    double currentLeftFrontSpeed = leftFrontDriveSpeed;
+    double currentLeftRearSpeed = leftRearDriveSpeed;
+    double currentRightFrontSpeed = rightFrontDriveSpeed;
+    double currentRightRearSpeed = rightRearDriveSpeed;
+    if (vD < .03)
+    {
+      leftFrontDriveSpeed = 0;
+      rightFrontDriveSpeed = 0;
+      leftRearDriveSpeed = 0;
+      rightRearDriveSpeed = 0;
+      telemetry.addData("Expected Direction: ", "Stopped");
+    } else if (thetaD >= (Math.PI * -2) / 8 && thetaD < (Math.PI * 2 / 8))
+    {
+      leftFrontDriveSpeed = vD;
+      rightFrontDriveSpeed = -vD;
+      leftRearDriveSpeed = -vD;
+      rightRearDriveSpeed = vD;
+      telemetry.addData("Expected Direction: ", "Right");
+    } else if (thetaD >= (Math.PI * 2 / 8) && thetaD < (Math.PI * 6 / 8))
+    {
+      leftFrontDriveSpeed = vD;
+      rightFrontDriveSpeed = vD;
+      leftRearDriveSpeed = vD;
+      rightRearDriveSpeed = vD;
+      telemetry.addData("Expected Direction: ", "Up");
+    } else if (thetaD >= (Math.PI * 6 / 8) || thetaD < Math.PI * -6 / 8)
+    {
+      leftFrontDriveSpeed = -vD;
+      rightFrontDriveSpeed = vD;
+      leftRearDriveSpeed = vD;
+      rightRearDriveSpeed = -vD;
+      telemetry.addData("Expected Direction: ", "Left");
+    } else if (thetaD >= (Math.PI * -6 / 8) && thetaD < (Math.PI * -2 / 8))
+    {
+      leftFrontDriveSpeed = -vD;
+      rightFrontDriveSpeed = -vD;
+      leftRearDriveSpeed = -vD;
+      rightRearDriveSpeed = -vD;
+      telemetry.addData("Expected Direction: ", "Down");
+    } else
+    {
+      leftFrontDriveSpeed = 0;
+      rightFrontDriveSpeed = 0;
+      leftRearDriveSpeed = 0;
+      rightRearDriveSpeed = 0;
+    }
+    
+    
+    leftFrontDriveSpeed += rotationalSpeed;
+    rightFrontDriveSpeed += -rotationalSpeed;
+    leftRearDriveSpeed += rotationalSpeed;
+    rightRearDriveSpeed += -rotationalSpeed;
+      
+      /*if (vD < .05){
+    leftFrontDriveSpeed =  0;
+    rightFrontDriveSpeed = 0;
+    leftRearDriveSpeed = 0;
+    rightRearDriveSpeed = 0;
+    telemetry.addData("Expected Direction: ", "Stopped");
+  }else if(thetaD >= (Math.PI * -1)/8 && thetaD < (Math.PI/8)) {
+      leftFrontDriveSpeed = vD;
+      rightFrontDriveSpeed = -vD;
+      leftRearDriveSpeed = -vD;
+      rightRearDriveSpeed = vD;
+      telemetry.addData("Expected Direction: ", "Right");
+    } else if ( thetaD >= (Math.PI/8) && thetaD < (Math.PI*3/8)){
+      leftFrontDriveSpeed = vD;
+      rightFrontDriveSpeed = vD;
+      leftRearDriveSpeed = -vD;
+      rightRearDriveSpeed = vD;
+      telemetry.addData("Expected Direction: ", "Up Right");
+    } else if ( thetaD >= (Math.PI*3/8) && thetaD < (Math.PI*5/8)) {
+      leftFrontDriveSpeed = vD;
+      rightFrontDriveSpeed = vD;
+      leftRearDriveSpeed = vD;
+      rightRearDriveSpeed = vD;
+      telemetry.addData("Expected Direction: ", "Up");
+    } else if ( thetaD >= (Math.PI*5/8) && thetaD < (Math.PI*7/8))
+    {
+      leftFrontDriveSpeed = vD;
+      rightFrontDriveSpeed = vD;
+      leftRearDriveSpeed = vD;
+      rightRearDriveSpeed = -vD;
+      telemetry.addData("Expected Direction: ", "Left Up");
+    } else if ( thetaD >= (Math.PI*7/8) || thetaD < Math.PI * -7/8)
+    {
+      leftFrontDriveSpeed = -vD;
+      rightFrontDriveSpeed = vD;
+      leftRearDriveSpeed = vD;
+      rightRearDriveSpeed = -vD;
+      telemetry.addData("Expected Direction: ", "Left");
+    }  else if ( thetaD >= (Math.PI*-7/8) && thetaD < (Math.PI*-5/8))
+    {
+      leftFrontDriveSpeed = -vD;
+      rightFrontDriveSpeed = vD;
+      leftRearDriveSpeed = -vD;
+      rightRearDriveSpeed = -vD;
+      telemetry.addData("Expected Direction: ", "Left Down");
+    }  else if ( thetaD >= (Math.PI*-5/8) && thetaD < (Math.PI*-3/8))
+    {
+      leftFrontDriveSpeed = -vD;
+      rightFrontDriveSpeed = -vD;
+      leftRearDriveSpeed = -vD;
+      rightRearDriveSpeed = -vD;
+      telemetry.addData("Expected Direction: ", "Down");
+    } else if ( thetaD >= (Math.PI*-3/8) && thetaD < (Math.PI*-1/8))
+    {
+      leftFrontDriveSpeed = -vD;
+      rightFrontDriveSpeed = -vD;
+      leftRearDriveSpeed = -vD;
+      rightRearDriveSpeed = vD;
+      telemetry.addData("Expected Direction: ", "Right Down");
+    }
+    else{
+      leftFrontDriveSpeed = 0;
+      rightFrontDriveSpeed = 0;
+      leftRearDriveSpeed = 0;
+      rightRearDriveSpeed = 0;
+      telemetry.addData("I should be going right: ", "False");
+    } */
     // place all the power numbers in a list for collection manipulations
     // (easier to find min / max etc when in a list)
     List<Double> speeds = Arrays.asList(rightFrontDriveSpeed,
-        leftFrontDriveSpeed, rightRearDriveSpeed, leftRearDriveSpeed  );
-
+      leftFrontDriveSpeed, rightRearDriveSpeed, leftRearDriveSpeed);
+    
     // scales the motor powers while maintaining power ratios.
     double minPower = Collections.min(speeds);
     double maxPower = Collections.max(speeds);
@@ -364,6 +504,48 @@ public class MecanumDriveChassis
         speeds.set(i, speeds.get(i) / maxMag);
       }
     }
+    
+    if (currentRightRearSpeed > 0 && rightRearDriveSpeed < 0)
+    {
+      rightRearDrive.setPower(0);
+    }
+    
+    if (currentRightRearSpeed < 0 && rightRearDriveSpeed > 0)
+    {
+      rightRearDrive.setPower(0);
+    }
+    
+    if (currentLeftRearSpeed > 0 && leftRearDriveSpeed < 0)
+    {
+      leftRearDrive.setPower(0);
+    }
+    
+    if (currentLeftRearSpeed < 0 && leftRearDriveSpeed > 0)
+    {
+      leftRearDrive.setPower(0);
+    }
+    
+    if (currentLeftFrontSpeed > 0 && leftFrontDriveSpeed < 0)
+    {
+      leftFrontDrive.setPower(0);
+    }
+    
+    if (currentLeftFrontSpeed < 0 && leftFrontDriveSpeed > 0)
+    {
+      leftFrontDrive.setPower(0);
+    }
+    
+    if (currentRightFrontSpeed > 0 && rightFrontDriveSpeed < 0)
+    {
+      rightFrontDrive.setPower(0);
+    }
+    
+    if (currentRightFrontSpeed < 0 && rightFrontDriveSpeed > 0)
+    {
+      rightFrontDrive.setPower(0);
+    }
+    
+    
     // must be same order as placed in the list
     // send the speeds to the motors
     rightFrontDrive.setPower(speeds.get(0));
@@ -371,8 +553,8 @@ public class MecanumDriveChassis
     rightRearDrive.setPower(speeds.get(2));
     leftRearDrive.setPower(speeds.get(3));
   }
-
-
+  
+  
   // grab the imu heading and crunch out the values used for navigation and telemetry.
   // This method produces the heading input component to the motors from the PID that holds the
   // desired angle.  The error from the PID is sent to the motors in the vTheta variable.
@@ -380,29 +562,28 @@ public class MecanumDriveChassis
   {
     // desired angle in degrees +/- 0 to 180 where CCW is + and CW is -
     angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS);
-
+    
     // convert  imu angle range to our [0, 2PI) range
     if (angles.firstAngle < 0)
     {
       currentHeading = angles.firstAngle + 2 * Math.PI;
-    }
-    else
+    } else
     {
       currentHeading = angles.firstAngle;
     }
-
+    
     IMUTelemetry.heading = currentHeading;
-    IMUTelemetry.error = vTheta = headingPID.getOutput(currentHeading, desiredHeading);
+    IMUTelemetry.error = rotationalSpeed = headingPID.getOutput(currentHeading, desiredHeading);
   }
-
-
+  
+  
   /** @param speedVar    */
   public void setSpeedScale(double speedVar)
   {
     this.speedScale = speedVar;
   }
-
-
+  
+  
   // Set up a new drive plan (list of drive legs)
   // Must be called from the opmode to initiate a drive plan
   /*
@@ -470,72 +651,72 @@ public class MecanumDriveChassis
        driveState = DriveState.IDLE;
      }
    }*/
-
-
+  
+  
   //Must be called from main loop repeatedly to know when the turn is completed.
   void Turning()
   {
     // check if close enough on either side of target value.
     if (abs(currentHeading - desiredHeading) < closeEnoughHeading)
     {
-    //  driveState = DriveState.IDLE;
+      //  driveState = DriveState.IDLE;
     }
   }
-
-
+  
+  
   void driveForward(double speed, double seconds)
   {
     driveTime = seconds;
-   // driveState = DriveState.DRIVING;
-    vD = speed/.707;  // divide by 0.707 because thetaD is 0 and we want to range full speed.
+    // driveState = DriveState.DRIVING;
+    vD = speed / .707;  // divide by 0.707 because thetaD is 0 and we want to range full speed.
     driveTimer.reset();
     thetaD = 0;     // no translation, currentHeading still valid (assumed)
   }
-
-
+  
+  
   void driveBackwards(double speed, double seconds)
   {
     driveTime = seconds;
-   // driveState = DriveState.DRIVING;
-    vD = -speed/.707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
+    // driveState = DriveState.DRIVING;
+    vD = -speed / .707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
     driveTimer.reset();
     thetaD = 0;      // no translation, currentHeading still valid (assumed)
   }
-
-
+  
+  
   void strafeLeft(double speed, double seconds)
   {
     driveTime = seconds;
-   // driveState = DriveState.DRIVING;
-    vD = -speed/.707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
+    // driveState = DriveState.DRIVING;
+    vD = -speed / .707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
     driveTimer.reset();
-    thetaD = -Math.PI/2;   // translation angle
+    thetaD = -Math.PI / 2;   // translation angle
   }
-
-
+  
+  
   void strafeRight(double speed, double seconds)
   {
     driveTime = seconds;
-   // driveState = DriveState.DRIVING;
-    vD = -speed/.707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
+    // driveState = DriveState.DRIVING;
+    vD = -speed / .707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
     driveTimer.reset();
-    thetaD = Math.PI/2;   // translation angle
+    thetaD = Math.PI / 2;   // translation angle
   }
-
-
+  
+  
   void turnToAbsoluteAngle(double newDesiredHeading)
   {
- //   driveState = DriveState.TURNING;
+    //   driveState = DriveState.TURNING;
     this.desiredHeading = newDesiredHeading / 180 * Math.PI;  // convert to RADIANS
   }
-
+  
   public boolean isDriving()
   {
-  //  return this.drivingAPlan;
+    //  return this.drivingAPlan;
     return true;
   }
-
-
+  
+  
   void RunUsingEncoders()
   {
     leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);

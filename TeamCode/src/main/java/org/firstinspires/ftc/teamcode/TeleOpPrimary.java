@@ -30,25 +30,25 @@ public class TeleOpPrimary extends LinearOpMode
   
   //private final double colorSpeed = 10; // change colors every 10 seconds
   //private double LEDTimeoutTime = 0;
-
+  
+  
   @Override
   public void runOpMode()
   {
+    
+    
     telemetry.addData("Status", "Initialized");
     telemetry.update();
     
-
-    driveChassis = new MecanumDriveChassis(hardwareMap);
-   // manipulatorPlatform = new ManipulatorPlatform(hardwareMap);
-    //leds = new LEDs(hardwareMap);
-    //leds.goOff();
-
+    // setup a instance of our drive system
+    driveChassis = new MecanumDriveChassis(hardwareMap, telemetry);
+    
+    
     // set dead zone to minimize unwanted stick input.
     //gamepad1.setJoystickDeadzone((float)0.05);
     boolean goingFast = false;
     boolean goingFastToggle = false;
     
-    //boolean isSpinning = false;
     
     // Wait for the game to start (driver presses PLAY)
     waitForStart();
@@ -60,6 +60,9 @@ public class TeleOpPrimary extends LinearOpMode
     // run until the end of the match (driver presses STOP)
     while (opModeIsActive())
     {
+      telemetry.addData("LStickY", gamepad1.left_stick_y * -1);
+      telemetry.addData("LStickX", gamepad1.left_stick_x);
+      telemetry.update();
       //set up counter
       // steps through color sequences every 'colorSpeed' seconds.
       /*
@@ -71,9 +74,9 @@ public class TeleOpPrimary extends LinearOpMode
       */
       // send joystick inputs to the drive chassis
       driveChassis.drive(gamepad1.left_stick_y, gamepad1.left_stick_x,
-                         gamepad1.right_stick_x, telemetry);
+        gamepad1.right_stick_x, gamepad1.right_bumper);
       
-      // *** Driver controls (game pad 1)
+     /* // *** Driver controls (game pad 1)
       // provide a throttle capability to run the bot at one of two speeds.
         if (gamepad1.right_bumper && !goingFast && !goingFastToggle)  // Go fast
         {
@@ -95,7 +98,7 @@ public class TeleOpPrimary extends LinearOpMode
           goingFastToggle = false;
         }
     
-        
+        */
         
         
         
@@ -136,12 +139,12 @@ public class TeleOpPrimary extends LinearOpMode
 
         
         
-
+/*
         eventTimer.reset();
         while (opModeIsActive() && eventTimer.time() < 0.5)
         {
           driveChassis.autoDrive(telemetry);
-        }
+        }*/
         //manipulatorPlatform.shooterExtend(shooterRetract);
 
       
