@@ -57,15 +57,6 @@ public class MecanumDriveChassis
   // heading about a unit circle in radians.
   private static double desiredHeading;  // rotates about the Z axis [0,2PI) rad.
   private static double currentHeading;  // rotates about the Z axis [0,2PI) rad.
-
-  /*
-  // keeps track of the drive plan state
-  private Queue<Leg> plan;
-  private Leg currentLeg;
-  private boolean drivingAPlan = false;
-  private enum DriveState {IDLE, DRIVING, TURNING}
-  private DriveState driveState = DriveState.IDLE;
-*/
   
   // Robot speed scaling factor (% of joystick input to use)
   // applied uniformly across all joystick inputs to the JoystickToMotion() method.
@@ -169,12 +160,9 @@ public class MecanumDriveChassis
         e.printStackTrace();
       }
     }
-    
+    //hello
     // create and initialize the PID for the heading
     headingPID = new PID(propCoeff, integCoeff, diffCoeff);
-    
-    // get the initial error and put valid data in the telemetry from the imu
-    IMUAngleProcessing();
     
     // set initial desired heading to the current actual heading.
     desiredHeading = currentHeading;
@@ -197,9 +185,6 @@ public class MecanumDriveChassis
   // Right X = rotate in place
   void drive(float driveLeftY, float driveLeftX, float driveRightX, boolean goFast)
   {
-    //telemetry.addData("Heading (rad) ", " %.4f", IMUTelemetry.heading );
-    //telemetry.addData("Error (rad) ", " %.4f",IMUTelemetry.error );
-    //telemetry.update();
     
     // calculate the vectors multiply input values by scaling factor for max speed.
     joystickToMotion(driveLeftY * speedScale, driveLeftX * speedScale,
@@ -217,7 +202,6 @@ public class MecanumDriveChassis
     }
     
     telemetry.addData("Theta(Degrees)", thetaD);
-    //telemetry.addData("LStickY", gamepad1.left_stick_y*-1);
     // Math out what to send to the motors and send it.
     PowerToWheels();
   }
@@ -251,79 +235,6 @@ public class MecanumDriveChassis
     // inverted since we want CW rotation on a positive value.
     // which is opposite of what PowerToWheels() wants in polar positive rotation (CCW).
     rotationalSpeed = rightStickX;
-    
-    // if there is new joystick input update the heading otherwise hold the current heading as
-    // the setpoint.
-    // headding is in radians so just using the +/- 1 from the joystick to add as a bias to the
-    // current angle will put the desired head +/- 57 degrees from current.  This should be more
-    // than enough to move the bot at max rotation speed.
-    // The chasing of this setpoint is controled by the PID loop on the vTheta value.
-    
-    
-    //averageHeading.add(rightStickX);  // average in the current stick value
-    
-    // if the averaged stick input is greater then the headingThreshold go ahead and adjust the heading.
-    // This keeps from updating the desiredHeading value if no joystick input is being made.
-    // Otherwise, it will always drive the desiredHeading to 0 (neutral joystick position)
-    /*if(Math.abs(averageHeading.getAverage()) > headingThreshold)
-    {
-      desiredHeading = currentHeading - averageHeading.getAverage();
-      // keep heading a positive angle
-      if (desiredHeading < 0)
-      {
-        desiredHeading += (2 * Math.PI);
-      }
-    }*/
-    // get the imu angles in the format we need.
-    // IMUAngleProcessing();
-    
-    // PID controls the vTheta input to the wheel power equation.
-    //vTheta = headingPID.getOutput(currentHeading, desiredHeading );
-  }
-  
-  
-  void autoDrive(Telemetry telemetry)
-  {
-//    telemetry.addLine().addData("Heading (rad) ", " %.4f", IMUTelemetry.heading )
-//    .addData("Error (rad) ", " %.4f",IMUTelemetry.error );
-//    telemetry.addLine().addData("Counts ", " %d", rightFrontDrive.getCurrentPosition() );
-//    telemetry.update();
-    
-    // always crunch the IMP data and work the PID to keep heading.
-    // IMUAngleProcessing();
-    
-    // the bot is not currently driving an active leg so if there is another one in the plan,
-    // start it, otherwise the plan is done.
-   /* if( drivingAPlan )
-    {
-      switch (driveState)
-      {
-        case DRIVING:
-          Driving();
-          break;
-
-        case TURNING:
-          Turning();
-          break;
-
-        case IDLE:
-        default:
-          nextLeg();
-          break;
-      }
-    }
-    else // not driving a plan... probably because there are no more legs in plan.
-    {
-      // plan is done, no active plan.  Just stop the bot and keep it stopped.
-      vD = 0;
-      thetaD = 0;
-    }
-
-    */
-    
-    // Math out what to send to the motors and send it.
-    // keeps sending even at stop.  ( 0 power to wheels )
-    // PowerToWheels();
   }
   
   
@@ -360,14 +271,6 @@ public class MecanumDriveChassis
   private void PowerToWheels()
   {
     
-    // Motors power = Y component of directional vector
-    //leftFrontDriveSpeed  = -1;//vD * Math.sin(-thetaD + Math.PI / 4) - vTheta
-    
-    //rightRearDriveSpeed  = -1;//vD * Math.sin(-thetaD + Math.PI / 4) + vTheta;
-    
-    // Motors power = X component of directional vector
-    //rightFrontDriveSpeed = -1;//vD * Math.cos(-thetaD + Math.PI / 4) + vTheta;
-    //leftRearDriveSpeed   = -1;//vD * Math.cos(-thetaD + Math.PI / 4) - vTheta;
     double currentLeftFrontSpeed = leftFrontDriveSpeed;
     double currentLeftRearSpeed = leftRearDriveSpeed;
     double currentRightFrontSpeed = rightFrontDriveSpeed;
@@ -420,74 +323,7 @@ public class MecanumDriveChassis
     rightFrontDriveSpeed += -rotationalSpeed;
     leftRearDriveSpeed += rotationalSpeed;
     rightRearDriveSpeed += -rotationalSpeed;
-      
-      /*if (vD < .05){
-    leftFrontDriveSpeed =  0;
-    rightFrontDriveSpeed = 0;
-    leftRearDriveSpeed = 0;
-    rightRearDriveSpeed = 0;
-    telemetry.addData("Expected Direction: ", "Stopped");
-  }else if(thetaD >= (Math.PI * -1)/8 && thetaD < (Math.PI/8)) {
-      leftFrontDriveSpeed = vD;
-      rightFrontDriveSpeed = -vD;
-      leftRearDriveSpeed = -vD;
-      rightRearDriveSpeed = vD;
-      telemetry.addData("Expected Direction: ", "Right");
-    } else if ( thetaD >= (Math.PI/8) && thetaD < (Math.PI*3/8)){
-      leftFrontDriveSpeed = vD;
-      rightFrontDriveSpeed = vD;
-      leftRearDriveSpeed = -vD;
-      rightRearDriveSpeed = vD;
-      telemetry.addData("Expected Direction: ", "Up Right");
-    } else if ( thetaD >= (Math.PI*3/8) && thetaD < (Math.PI*5/8)) {
-      leftFrontDriveSpeed = vD;
-      rightFrontDriveSpeed = vD;
-      leftRearDriveSpeed = vD;
-      rightRearDriveSpeed = vD;
-      telemetry.addData("Expected Direction: ", "Up");
-    } else if ( thetaD >= (Math.PI*5/8) && thetaD < (Math.PI*7/8))
-    {
-      leftFrontDriveSpeed = vD;
-      rightFrontDriveSpeed = vD;
-      leftRearDriveSpeed = vD;
-      rightRearDriveSpeed = -vD;
-      telemetry.addData("Expected Direction: ", "Left Up");
-    } else if ( thetaD >= (Math.PI*7/8) || thetaD < Math.PI * -7/8)
-    {
-      leftFrontDriveSpeed = -vD;
-      rightFrontDriveSpeed = vD;
-      leftRearDriveSpeed = vD;
-      rightRearDriveSpeed = -vD;
-      telemetry.addData("Expected Direction: ", "Left");
-    }  else if ( thetaD >= (Math.PI*-7/8) && thetaD < (Math.PI*-5/8))
-    {
-      leftFrontDriveSpeed = -vD;
-      rightFrontDriveSpeed = vD;
-      leftRearDriveSpeed = -vD;
-      rightRearDriveSpeed = -vD;
-      telemetry.addData("Expected Direction: ", "Left Down");
-    }  else if ( thetaD >= (Math.PI*-5/8) && thetaD < (Math.PI*-3/8))
-    {
-      leftFrontDriveSpeed = -vD;
-      rightFrontDriveSpeed = -vD;
-      leftRearDriveSpeed = -vD;
-      rightRearDriveSpeed = -vD;
-      telemetry.addData("Expected Direction: ", "Down");
-    } else if ( thetaD >= (Math.PI*-3/8) && thetaD < (Math.PI*-1/8))
-    {
-      leftFrontDriveSpeed = -vD;
-      rightFrontDriveSpeed = -vD;
-      leftRearDriveSpeed = -vD;
-      rightRearDriveSpeed = vD;
-      telemetry.addData("Expected Direction: ", "Right Down");
-    }
-    else{
-      leftFrontDriveSpeed = 0;
-      rightFrontDriveSpeed = 0;
-      leftRearDriveSpeed = 0;
-      rightRearDriveSpeed = 0;
-      telemetry.addData("I should be going right: ", "False");
-    } */
+  
     // place all the power numbers in a list for collection manipulations
     // (easier to find min / max etc when in a list)
     List<Double> speeds = Arrays.asList(rightFrontDriveSpeed,
@@ -552,168 +388,6 @@ public class MecanumDriveChassis
     leftFrontDrive.setPower(speeds.get(1));
     rightRearDrive.setPower(speeds.get(2));
     leftRearDrive.setPower(speeds.get(3));
-  }
-  
-  
-  // grab the imu heading and crunch out the values used for navigation and telemetry.
-  // This method produces the heading input component to the motors from the PID that holds the
-  // desired angle.  The error from the PID is sent to the motors in the vTheta variable.
-  private void IMUAngleProcessing()
-  {
-    // desired angle in degrees +/- 0 to 180 where CCW is + and CW is -
-    angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.RADIANS);
-    
-    // convert  imu angle range to our [0, 2PI) range
-    if (angles.firstAngle < 0)
-    {
-      currentHeading = angles.firstAngle + 2 * Math.PI;
-    } else
-    {
-      currentHeading = angles.firstAngle;
-    }
-    
-    IMUTelemetry.heading = currentHeading;
-    IMUTelemetry.error = rotationalSpeed = headingPID.getOutput(currentHeading, desiredHeading);
-  }
-  
-  
-  /** @param speedVar    */
-  public void setSpeedScale(double speedVar)
-  {
-    this.speedScale = speedVar;
-  }
-  
-  
-  // Set up a new drive plan (list of drive legs)
-  // Must be called from the opmode to initiate a drive plan
-  /*
-  void startPlan(Queue<Leg> newPlan )
-  {
-    if( newPlan.size() !=0 && !drivingAPlan )
-    {
-      this.plan = newPlan;
-      drivingAPlan = true;
-      driveState = DriveState.IDLE;
-    }
-  }
-*/
-/*
-  // execute a path (list of drive legs)
-  boolean nextLeg()
-  {
-
-    if(plan.size() !=0 && drivingAPlan) // only run if there are legs in the plan and a plan is active.
-    {
-      currentLeg = plan.remove();  // legs are removed as they are driven
-
-      switch (currentLeg.mode)
-      {
-        case FORWARD:
-          driveForward(currentLeg.speed/100, currentLeg.distance );
-          break;
-
-        case BACKWARDS:
-          driveBackwards(currentLeg.speed/100, currentLeg.distance );
-          break;
-
-        case LEFT:
-          strafeLeft(currentLeg.speed/100, currentLeg.distance );
-          break;
-
-        case RIGHT:
-          strafeRight(currentLeg.speed/100, currentLeg.distance );
-          break;
-
-        case TURN:
-          turnToAbsoluteAngle(currentLeg.angle);
-          break;
-      }
-    }
-    // no more path to drive. (path is empty)
-    else
-    {
-      drivingAPlan = false;
-    }
-    return drivingAPlan;
-  }
-/*
-  /** Must be called from main loop repeatedly and quickly to stop the motors when the
-   * drive time is reached.
-   * Timer is reset to zero at the start of each leg.
-   **/
-   /*void Driving()
-   {
-     if (driveTimer.time() > driveTime)
-     {
-       // stop the motors
-       vD = 0;
-       thetaD = 0;
-       driveState = DriveState.IDLE;
-     }
-   }*/
-  
-  
-  //Must be called from main loop repeatedly to know when the turn is completed.
-  void Turning()
-  {
-    // check if close enough on either side of target value.
-    if (abs(currentHeading - desiredHeading) < closeEnoughHeading)
-    {
-      //  driveState = DriveState.IDLE;
-    }
-  }
-  
-  
-  void driveForward(double speed, double seconds)
-  {
-    driveTime = seconds;
-    // driveState = DriveState.DRIVING;
-    vD = speed / .707;  // divide by 0.707 because thetaD is 0 and we want to range full speed.
-    driveTimer.reset();
-    thetaD = 0;     // no translation, currentHeading still valid (assumed)
-  }
-  
-  
-  void driveBackwards(double speed, double seconds)
-  {
-    driveTime = seconds;
-    // driveState = DriveState.DRIVING;
-    vD = -speed / .707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
-    driveTimer.reset();
-    thetaD = 0;      // no translation, currentHeading still valid (assumed)
-  }
-  
-  
-  void strafeLeft(double speed, double seconds)
-  {
-    driveTime = seconds;
-    // driveState = DriveState.DRIVING;
-    vD = -speed / .707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
-    driveTimer.reset();
-    thetaD = -Math.PI / 2;   // translation angle
-  }
-  
-  
-  void strafeRight(double speed, double seconds)
-  {
-    driveTime = seconds;
-    // driveState = DriveState.DRIVING;
-    vD = -speed / .707;     // divide by 0.707 because thetaD is 0 and we want to range full speed.
-    driveTimer.reset();
-    thetaD = Math.PI / 2;   // translation angle
-  }
-  
-  
-  void turnToAbsoluteAngle(double newDesiredHeading)
-  {
-    //   driveState = DriveState.TURNING;
-    this.desiredHeading = newDesiredHeading / 180 * Math.PI;  // convert to RADIANS
-  }
-  
-  public boolean isDriving()
-  {
-    //  return this.drivingAPlan;
-    return true;
   }
   
   

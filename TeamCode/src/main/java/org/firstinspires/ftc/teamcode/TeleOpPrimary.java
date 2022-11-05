@@ -11,6 +11,7 @@ public class TeleOpPrimary extends LinearOpMode
 {
   // Declare OpMode members.
   private MecanumDriveChassis driveChassis;
+  private GripperControl gripperControl;
  // private ManipulatorPlatform manipulatorPlatform;
   //private LEDs leds;
   
@@ -42,6 +43,7 @@ public class TeleOpPrimary extends LinearOpMode
     
     // setup a instance of our drive system
     driveChassis = new MecanumDriveChassis(hardwareMap, telemetry);
+    gripperControl = new GripperControl(hardwareMap, telemetry);
     
     
     // set dead zone to minimize unwanted stick input.
@@ -56,7 +58,7 @@ public class TeleOpPrimary extends LinearOpMode
     //leds.goConfetti();  // start the LEDs in confetti
   
    // driveChassis.setSpeedScale(manipulatorPlatform.lowSpeed);
-    driveChassis.setSpeedScale(0.5);
+  
     // run until the end of the match (driver presses STOP)
     while (opModeIsActive())
     {
@@ -75,6 +77,22 @@ public class TeleOpPrimary extends LinearOpMode
       // send joystick inputs to the drive chassis
       driveChassis.drive(gamepad1.left_stick_y, gamepad1.left_stick_x,
         gamepad1.right_stick_x, gamepad1.right_bumper);
+  
+      if (gamepad2.x)
+      {
+        gripperControl.pushOut();
+      }
+  
+      if (gamepad2.a)
+      {
+        gripperControl.pullIn();
+      }
+  
+      if (gamepad2.b)
+      {
+        gripperControl.stop();
+      }
+      
       
      /* // *** Driver controls (game pad 1)
       // provide a throttle capability to run the bot at one of two speeds.
