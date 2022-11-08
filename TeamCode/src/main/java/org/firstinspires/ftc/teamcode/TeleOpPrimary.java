@@ -12,6 +12,7 @@ public class TeleOpPrimary extends LinearOpMode
   // Declare OpMode members.
   private MecanumDriveChassis driveChassis;
   private GripperControl gripperControl;
+  private ArmControl armcontrol;
  // private ManipulatorPlatform manipulatorPlatform;
   //private LEDs leds;
   
@@ -44,6 +45,7 @@ public class TeleOpPrimary extends LinearOpMode
     // setup a instance of our drive system
     driveChassis = new MecanumDriveChassis(hardwareMap, telemetry);
     gripperControl = new GripperControl(hardwareMap, telemetry);
+    armcontrol = new ArmControl(hardwareMap, telemetry);
     
     
     // set dead zone to minimize unwanted stick input.
@@ -78,20 +80,26 @@ public class TeleOpPrimary extends LinearOpMode
       driveChassis.drive(gamepad1.left_stick_y, gamepad1.left_stick_x,
         gamepad1.right_stick_x, gamepad1.right_bumper);
   
-      if (gamepad2.x)
-      {
-        gripperControl.pushOut();
-      }
-  
       if (gamepad2.a)
       {
+        gripperControl.pushOut();
+      } else if (gamepad2.x)
+      {
         gripperControl.pullIn();
-      }
-  
-      if (gamepad2.b)
+      } else
       {
         gripperControl.stop();
       }
+  
+      if (gamepad2.dpad_up)
+      {
+        armcontrol.raise();
+      }
+      if (gamepad2.dpad_down)
+      {
+        armcontrol.lower();
+      }
+    }
       
       
      /* // *** Driver controls (game pad 1)
@@ -216,9 +224,8 @@ public class TeleOpPrimary extends LinearOpMode
       }*/
 
     }
-  }
-
-
+  
+  
   // test the event time
   private boolean eventTimeOut ( double eventTime)
   {

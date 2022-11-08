@@ -16,13 +16,13 @@ import java.util.List;
 
 import static java.lang.Thread.sleep;
 
-public class GripperControl
+public class ArmControl
 {
   
-  private DcMotor gripperMotor;
+  private DcMotor armMotor;
   
   
-  private static double gripperMotorSpeed;
+  private static double armMotorSpeed;
   
   // Robot speed [-1, 1].  (speed in any direction that is not rotational)
   // does not have any angular component, just scaler velocity.
@@ -71,26 +71,27 @@ public class GripperControl
   private RollingAverage averageHeading = null;
   private Telemetry telemetry;
   
-  GripperControl(HardwareMap hardwareMap, Telemetry theTelemetry)
+  ArmControl(HardwareMap hardwareMap, Telemetry theTelemetry)
   {
     telemetry = theTelemetry;
     
     // Initialize the hardware variables. Note that the strings used here as parameters
     // to 'get' must correspond to the names assigned during the robot configuration
     // step (using the FTC Robot Controller app on the phone).
-    gripperMotor = hardwareMap.get(DcMotor.class, "gripper");
+    armMotor = hardwareMap.get(DcMotor.class, "arm" +
+      "");
     
     
-    gripperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     
     
     // Motors on one side reversed to drive forward
     // Reverse the motor that runs backwards when connected directly to the battery
     // A positive power number should drive the robot forward regardless of the motor's
     // position on the robot.
-    gripperMotor.setDirection(DcMotor.Direction.REVERSE);
+    armMotor.setDirection(DcMotor.Direction.REVERSE);
     
-    gripperMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     
     // set motion parameters.
     vD = 0;
@@ -98,9 +99,9 @@ public class GripperControl
     rotationalSpeed = 0;
     
     // Set all the motor speeds.
-    gripperMotorSpeed = 0;
+    armMotorSpeed = 0;
     
-    gripperMotor.setPower(gripperMotorSpeed);
+    armMotor.setPower(armMotorSpeed);
     
     // initially setup the PID parameters
   }
@@ -192,30 +193,32 @@ public class GripperControl
    **/
   private void PowerToWheels()
   {
-  
-    gripperMotor.setPower(gripperMotorSpeed);
+    
+    armMotor.setPower(armMotorSpeed);
   }
   
   
-  public void pullIn()
+  public void raise()
   {
-    gripperMotor.setPower(-0.2);
-  
+    armMotor.setPower(-0.5);
   }
   
-  public void pushOut()
+  public void lower()
   {
-  
-    gripperMotor.setPower(0.05);
+    armMotor.setPower(0.5);
   }
   
   
   public void stop()
   {
-    gripperMotor.setPower(0);
+    
+    armMotor.setPower(0);
   }
 }
 
 
 
-  
+
+
+
+
