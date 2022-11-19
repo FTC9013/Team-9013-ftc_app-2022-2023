@@ -2,10 +2,10 @@ package org.firstinspires.ftc.teamcode;
 
 public class RollingAverage {
 
-  private int size;
+  private final int size;
   private double total = 0d;
   private int index = 0;
-  private double[] samples;
+  private final double[] samples;
 
   public RollingAverage(int size) {
     this.size = size;
