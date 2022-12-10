@@ -33,28 +33,30 @@ public class TeleOpPrimary extends LinearOpMode
       telemetry.addData("LStickY", gamepad1.left_stick_y * -1);
       telemetry.addData("LStickX", gamepad1.left_stick_x);
       telemetry.update();
-    
+  
       driveChassis.drive(gamepad1.left_stick_y, gamepad1.left_stick_x,
-        gamepad1.right_stick_x, gamepad1.right_bumper);
-    
-      if (gamepad2.a)
+        gamepad1.right_stick_x, gamepad1.left_bumper);
+  
+      if (gamepad2.x)
       {
         gripperControl.pushOut();
-      } else if (gamepad2.x)
+      } else if (gamepad2.a)
       {
         gripperControl.pullIn();
       } else
       {
         gripperControl.stop();
       }
-    
-      if (gamepad2.dpad_up)
+  
+      if (gamepad2.left_stick_y > 0.2)
       {
         armcontrol.raise();
-      }
-      if (gamepad2.dpad_down)
+      } else if (gamepad2.left_stick_y < -0.2)
       {
         armcontrol.lower();
+      } else
+      {
+        armcontrol.stop();
       }
     }
   }

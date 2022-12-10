@@ -1,23 +1,10 @@
 package org.firstinspires.ftc.teamcode;
 
-import android.graphics.Color;
-
-import com.qualcomm.hardware.rev.RevTouchSensor;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
-import com.qualcomm.robotcore.hardware.Servo;
-
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
-import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.RADIANS;
-
 public class ManipulatorPlatform
 {
+  public ManipulatorPlatform(MecanumDriveChassis driveChassis)
+  {
+  }
 
  /* private DcMotorEx spinnerMotor = null;
   private DcMotorEx armMotor = null;
@@ -184,5 +171,5 @@ public class ManipulatorPlatform
     extenderMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     extenderMotor.setPower(1);
   }*//*
-*/
+ */
 }

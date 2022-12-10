@@ -29,30 +29,27 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+
 import java.util.List;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer.CameraDirection;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-
 @TeleOp(name = "Concept: TensorFlow Object Detection", group = "Concept")
-@Disabled
 public class ConceptTensorFlowObjectDetection extends LinearOpMode
 {
   
   private static final String TFOD_MODEL_ASSET = "model_unquant.tflite";
   
   private static final String[] LABELS = {
-    "1 Bolt",
-    "2 Bulb",
-    "3 Panel"
+    "1: Square",
+    "2: Triangle",
+    "3: Circle"
   };
   
   WebcamName webcamName;
@@ -60,8 +57,7 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
   private static final String LABEL_SECOND_ELEMENT = "Triangle";
   private static final String LABEL_THIRD_ELEMENT = "Circle";
   
-  private static final String VUFORIA_KEY =
-    " -- YOUR NEW VUFORIA KEY GOES HERE  --- ";
+  //private static final String VUFORIA_KEY = "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
   
   /**
    * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
@@ -80,13 +76,15 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
   {
     // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
     // first.
-    
+  
     webcamName = hardwareMap.get(WebcamName.class, "Webcam");
-    
-    
+    telemetry.addData("WebCam", webcamName.getSerialNumber());
+    telemetry.update();
+  
+  
     initVuforia();
     initTfod();
-    
+  
     /**
      * Activate TensorFlow Object Detection before we wait for the start command.
      * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
@@ -94,7 +92,6 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
     if (tfod != null)
     {
       tfod.activate();
-      
       // The TensorFlow software will scale the input images from the camera to a lower resolution.
       // This can result in lower detection accuracy at longer distances (> 55cm or 22").
       // If your target is at distance greater than 50 cm (20") you can increase the magnification value
@@ -180,9 +177,9 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
     
     // set the minimumConfidence to a higher percentage to be more selective when identifying objects.
     tfodParameters.minResultConfidence = (float) 0.75;
-    
+  
     tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-    tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+    tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT, LABEL_THIRD_ELEMENT);
   }
   /**
    * Initialize the Vuforia localization engine.

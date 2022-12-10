@@ -10,10 +10,12 @@ public class GripperControl
 {
   
   private final DcMotor gripperMotor;
+  private final Telemetry telemetry;
   
   GripperControl(HardwareMap hardwareMap, Telemetry theTelemetry)
   {
   
+    telemetry = theTelemetry;
     // Initialize the hardware variables
     gripperMotor = hardwareMap.get(DcMotor.class, "gripper");
   
@@ -31,12 +33,15 @@ public class GripperControl
   
   public void pullIn()
   {
-    gripperMotor.setPower(-0.2);
+    gripperMotor.setPower(-0.3);
+    telemetry.addData("Pulling in", "True");
   }
   
   public void pushOut()
   {
     gripperMotor.setPower(0.05);
+    telemetry.addData("Pushing Out", "True");
+    ;
   }
   
   
@@ -44,6 +49,7 @@ public class GripperControl
   {
     gripperMotor.setPower(0);
   }
+  
 }
 
 
