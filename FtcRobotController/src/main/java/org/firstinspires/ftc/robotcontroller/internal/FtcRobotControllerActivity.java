@@ -309,8 +309,7 @@ public class FtcRobotControllerActivity extends Activity
     // Check if this RC app is from a later FTC season than what was installed previously
     int ftcSeasonYearOfPreviouslyInstalledRc = preferencesHelper.readInt(getString(R.string.pref_ftc_season_year_of_current_rc), 0);
     int ftcSeasonYearOfCurrentlyInstalledRc = AppUtil.getInstance().getFtcSeasonYear(AppUtil.getInstance().getLocalSdkBuildMonth()).getValue();
-    if (ftcSeasonYearOfCurrentlyInstalledRc > ftcSeasonYearOfPreviouslyInstalledRc)
-    {
+    if (ftcSeasonYearOfCurrentlyInstalledRc > ftcSeasonYearOfPreviouslyInstalledRc) {
       preferencesHelper.writeIntPrefIfDifferent(getString(R.string.pref_ftc_season_year_of_current_rc), ftcSeasonYearOfCurrentlyInstalledRc);
       // Since it's a new FTC season, we should reset certain settings back to their default values.
       preferencesHelper.writeBooleanPrefIfDifferent(getString(R.string.pref_warn_about_2_4_ghz_band), true);
@@ -318,20 +317,16 @@ public class FtcRobotControllerActivity extends Activity
       preferencesHelper.writeBooleanPrefIfDifferent(getString(R.string.pref_warn_about_mismatched_app_versions), true);
       preferencesHelper.writeBooleanPrefIfDifferent(getString(R.string.pref_warn_about_incorrect_clocks), true);
     }
-  
-    entireScreenLayout = findViewById(R.id.entire_screen);
-    buttonMenu = findViewById(R.id.menu_buttons);
-    buttonMenu.setOnClickListener(new View.OnClickListener()
-    {
+
+    entireScreenLayout = (LinearLayout) findViewById(R.id.entire_screen);
+    buttonMenu = (ImageButton) findViewById(R.id.menu_buttons);
+    buttonMenu.setOnClickListener(new View.OnClickListener() {
       @Override
-      public void onClick(View v)
-      {
+      public void onClick(View v) {
         PopupMenu popupMenu = new PopupMenu(FtcRobotControllerActivity.this, v);
-        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener()
-        {
+        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
           @Override
-          public boolean onMenuItemClick(MenuItem item)
-          {
+          public boolean onMenuItemClick(MenuItem item) {
             return onOptionsItemSelected(item); // Delegate to the handler for the hardware menu button
           }
         });
@@ -360,32 +355,31 @@ public class FtcRobotControllerActivity extends Activity
       ClassManagerFactory.registerFilters();
       ClassManagerFactory.processAllClasses();
     }
-  
+
     cfgFileMgr = new RobotConfigFileManager(this);
-  
+
     // Clean up 'dirty' status after a possible crash
     RobotConfigFile configFile = cfgFileMgr.getActiveConfig();
-    if (configFile.isDirty())
-    {
+    if (configFile.isDirty()) {
       configFile.markClean();
       cfgFileMgr.setActiveConfig(false, configFile);
     }
-  
-    textDeviceName = findViewById(R.id.textDeviceName);
-    textNetworkConnectionStatus = findViewById(R.id.textNetworkConnectionStatus);
-    textRobotStatus = findViewById(R.id.textRobotStatus);
-    textOpMode = findViewById(R.id.textOpMode);
-    textErrorMessage = findViewById(R.id.textErrorMessage);
-    textGamepad[0] = findViewById(R.id.textGamepad1);
-    textGamepad[1] = findViewById(R.id.textGamepad2);
+
+    textDeviceName = (TextView) findViewById(R.id.textDeviceName);
+    textNetworkConnectionStatus = (TextView) findViewById(R.id.textNetworkConnectionStatus);
+    textRobotStatus = (TextView) findViewById(R.id.textRobotStatus);
+    textOpMode = (TextView) findViewById(R.id.textOpMode);
+    textErrorMessage = (TextView) findViewById(R.id.textErrorMessage);
+    textGamepad[0] = (TextView) findViewById(R.id.textGamepad1);
+    textGamepad[1] = (TextView) findViewById(R.id.textGamepad2);
     immersion = new ImmersiveMode(getWindow().getDecorView());
     dimmer = new Dimmer(this);
     dimmer.longBright();
-  
+
     programmingModeManager = new ProgrammingModeManager();
     programmingModeManager.register(new ProgrammingWebHandlers());
     programmingModeManager.register(new OnBotJavaProgrammingMode());
-  
+
     updateUI = createUpdateUI();
     callback = createUICallback(updateUI);
 
@@ -538,17 +532,20 @@ public class FtcRobotControllerActivity extends Activity
     if (controllerService == null) {
       return false;
     }
-  
+
     Robot robot = controllerService.getRobot();
-  
-    if ((robot == null) || (robot.eventLoopManager == null))
-    {
+
+    if ((robot == null) || (robot.eventLoopManager == null)) {
       return false;
     }
-  
+
     RobotState robotState = robot.eventLoopManager.state;
-  
-    return robotState == RobotState.RUNNING;
+
+    if (robotState != RobotState.RUNNING) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   @Override
@@ -632,7 +629,7 @@ public class FtcRobotControllerActivity extends Activity
    * tfodMonitorView) based on the given configuration. Makes the children split the space.
    */
   private void updateMonitorLayout(Configuration configuration) {
-    LinearLayout monitorContainer = findViewById(R.id.monitorContainer);
+    LinearLayout monitorContainer = (LinearLayout) findViewById(R.id.monitorContainer);
     if (configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) {
       // When the phone is landscape, lay out the monitor views horizontally.
       monitorContainer.setOrientation(LinearLayout.HORIZONTAL);
@@ -806,7 +803,11 @@ public class FtcRobotControllerActivity extends Activity
       if (key.equals(context.getString(R.string.pref_app_theme))) {
         ThemedActivity.restartForAppThemeChange(getTag(), getString(R.string.appThemeChangeRestartNotifyRC));
       } else if (key.equals(context.getString(R.string.pref_wifi_automute))) {
-        initWifiMute(preferencesHelper.readBoolean(context.getString(R.string.pref_wifi_automute), false));
+        if (preferencesHelper.readBoolean(context.getString(R.string.pref_wifi_automute), false)) {
+          initWifiMute(true);
+        } else {
+          initWifiMute(false);
+        }
       }
     }
   }

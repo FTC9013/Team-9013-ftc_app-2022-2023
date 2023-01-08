@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import java.util.List;
@@ -42,26 +43,31 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
-@TeleOp(name = "Concept: TensorFlow Object Detection", group = "Concept")
-@Disabled
+@Autonomous(name = "Concept: TensorFlow Object Detection", group = "Concept")
+//@Disabled
 public class ConceptTensorFlowObjectDetection extends LinearOpMode
 {
   
-  private static final String TFOD_MODEL_ASSET = "model_unquant.tflite";
-  
-  private static final String[] LABELS = {
-    "1 Bolt",
-    "2 Bulb",
-    "3 Panel"
-  };
-  
-  WebcamName webcamName;
-  private static final String LABEL_FIRST_ELEMENT = "Square";
-  private static final String LABEL_SECOND_ELEMENT = "Triangle";
-  private static final String LABEL_THIRD_ELEMENT = "Circle";
+
+//  private static final String[] LABELS = {
+//    "1 Bolt",
+//    "2 Bulb",
+//    "3 Panel"
+//  };
+
+//  private static final String TFOD_MODEL_ASSET = "UltimateGoal.tflite";
+//  private static final String TFOD_MODEL_ASSET = "model_unquant.tflite";
+  private static final String TFOD_MODEL_ASSET = "ftc20222_matrix9013.tflite";
+  private static final String LABEL_FIRST_ELEMENT = "Dog";
+  private static final String LABEL_SECOND_ELEMENT = "Single";
+
+
+//  private static final String LABEL_FIRST_ELEMENT = "Square";
+//  private static final String LABEL_SECOND_ELEMENT = "Triangle";
+//  private static final String LABEL_THIRD_ELEMENT = "Circle";
   
   private static final String VUFORIA_KEY =
-    " -- YOUR NEW VUFORIA KEY GOES HERE  --- ";
+          "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
   
   /**
    * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
@@ -74,6 +80,8 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
    * Detection engine.
    */
   private TFObjectDetector tfod;
+
+  WebcamName webcamName;
   
   @Override
   public void runOpMode()
@@ -101,7 +109,7 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
       // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
       // should be set to the value of the images used to create the TensorFlow Object Detection model
       // (typically 16/9).
-      tfod.setZoom(1.0, 16.0 / 9.0);
+      tfod.setZoom(2.5, 16.0 / 9.0);
     }
     
     /** Wait for the game to begin */
@@ -121,20 +129,38 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
           if (updatedRecognitions != null)
           {
             telemetry.addData("# Objects Detected", updatedRecognitions.size());
-            
-            // step through the list of recognitions and display image position/size information for each one
-            // Note: "Image number" refers to the randomized image orientation/number
-            for (Recognition recognition : updatedRecognitions)
+            telemetry.addData("Vbrose", "Marker1");
+
+            if (updatedRecognitions.size() == 0 )
             {
-              double col = (recognition.getLeft() + recognition.getRight()) / 2;
-              double row = (recognition.getTop() + recognition.getBottom()) / 2;
-              double width = Math.abs(recognition.getRight() - recognition.getLeft());
-              double height = Math.abs(recognition.getTop() - recognition.getBottom());
-              
-              telemetry.addData("", " ");
-              telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
-              telemetry.addData("- Position (Row/Col)", "%.0f / %.0f", row, col);
-              telemetry.addData("- Size (Width/Height)", "%.0f / %.0f", width, height);
+              // empty list.  no objects recognized.
+              telemetry.addData("TFOD", "No items detected.");
+//              telemetry.addData("Target Zone", "A");
+            }
+            else {
+              // step through the list of recognitions and display image position/size information for each one
+              // Note: "Image number" refers to the randomized image orientation/number
+
+              int i =0;
+              for (Recognition recognition : updatedRecognitions) {
+//                double col = (recognition.getLeft() + recognition.getRight()) / 2;
+//                double row = (recognition.getTop() + recognition.getBottom()) / 2;
+//                double width = Math.abs(recognition.getRight() - recognition.getLeft());
+//                double height = Math.abs(recognition.getTop() - recognition.getBottom());
+
+
+//                telemetry.addData("", " ");
+//                telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
+//                telemetry.addData("- Position (Row/Col)", "%.0f / %.0f", row, col);
+//                telemetry.addData("- Size (Width/Height)", "%.0f / %.0f", width, height);
+                  telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                  telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                          recognition.getLeft(), recognition.getTop());
+                  telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                          recognition.getRight(), recognition.getBottom());
+                  i++;
+
+              }
             }
             telemetry.update();
           }
@@ -179,43 +205,11 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
     // TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();
     
     // set the minimumConfidence to a higher percentage to be more selective when identifying objects.
-    tfodParameters.minResultConfidence = (float) 0.75;
+    tfodParameters.minResultConfidence = (float) 0.15;
     
     tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
     tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
   }
-  /**
-   * Initialize the Vuforia localization engine.
-   */
-  /*private void initVuforia() {
-   *//*
- * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
- *//*
-    VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-    
-    parameters.vuforiaLicenseKey = VUFORIA_KEY;
-    parameters.cameraDirection = CameraDirection.BACK;
-    
-    //  Instantiate the Vuforia engine
-    vuforia = ClassFactory.getInstance().createVuforia(parameters);
-  }
-  
-  *//**
- //* Initialize the TensorFlow Object Detection engine.
- // *//*
-  private void initTfod() {
-    int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-      "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-    TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-    tfodParameters.minResultConfidence = 0.75f;
-    tfodParameters.isModelTensorFlow2 = true;
-    tfodParameters.inputSize = 300;
-    tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-    
-    // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
-    // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
-    tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
-    // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
-  }*/
+
 }
 
