@@ -17,7 +17,7 @@ import java.util.List;
 public class DetectandMove extends LinearOpMode
 {
   private ElapsedTime runTime = new ElapsedTime();
-  double power = 0.55;
+  double power = 0.4;
   int distance = 12;
   private static final String TFOD_MODEL_ASSET = "PowerPlay.tflite";
   private static final String[] LABELS = {
@@ -74,6 +74,7 @@ public class DetectandMove extends LinearOpMode
     robot.leftRear.setTargetPosition(-distance);
     robot.rightRear.setTargetPosition(distance);
     */
+    double runDuration = 1.9;
     runTime.reset();
     robot.leftFront.setPower(power);
     robot.leftRear.setPower(-power);
@@ -89,13 +90,30 @@ public class DetectandMove extends LinearOpMode
     {*/
   }
   
-  public void moveLeft(double power)
+  public void moveFow()
   {
+    double runDuration = 0.1;
     runTime.reset();
     robot.leftFront.setPower(power);
-    robot.leftRear.setPower(-power);
-    robot.rightFront.setPower(-power);
+    robot.leftRear.setPower(power);
+    robot.rightFront.setPower(power);
     robot.rightRear.setPower(power);
+    
+    while (opModeIsActive() && runTime.time() < runDuration)
+    {
+      //Do nothing. Allows the motors to spin
+    }
+    stopMotor();
+  }
+  
+  public void moveLeft(double power)
+  {
+    double runDuration = 2.5;
+    runTime.reset();
+    robot.leftFront.setPower(-power);
+    robot.leftRear.setPower(power);
+    robot.rightFront.setPower(power);
+    robot.rightRear.setPower(-power);
     
     while (opModeIsActive() && runTime.time() < runDuration)
     {
@@ -112,10 +130,10 @@ public class DetectandMove extends LinearOpMode
     robot.rightRear.setPower(0);
   }
   
-  double runDuration = 1;
   
   public void moveForward(double power)
   {
+    double runDuration = 1.1;
     runTime.reset();
     robot.leftFront.setPower(power);
     robot.leftRear.setPower(power);
@@ -172,7 +190,7 @@ public class DetectandMove extends LinearOpMode
           if (updatedRecognitions != null)
           {
             telemetry.addData("# Objects Detected", updatedRecognitions.size());
-            
+  
             // step through the list of recognitions and display image position/size information for each one
             // Note: "Image number" refers to the randomized image orientation/number
             for (Recognition recognition : updatedRecognitions)
@@ -181,18 +199,23 @@ public class DetectandMove extends LinearOpMode
               double row = (recognition.getTop() + recognition.getBottom()) / 2;
               double width = Math.abs(recognition.getRight() - recognition.getLeft());
               double height = Math.abs(recognition.getTop() - recognition.getBottom());
-              
+    
               telemetry.addData("", " ");
               telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
               telemetry.addData("- Position (Row/Col)", "%.0f / %.0f", row, col);
               telemetry.addData("- Size (Width/Height)", "%.0f / %.0f", width, height);
-              
+    
               if (recognition.getConfidence() * 100 > threshold)
               {
                 label = recognition.getLabel();
                 break;
               }
             }
+            telemetry.update();
+          } else // no objects are detected
+          {
+            //moveFow();
+            telemetry.addData("No objects detected. Moving Forward.", 0);
             telemetry.update();
           }
         }
@@ -203,6 +226,7 @@ public class DetectandMove extends LinearOpMode
       if (label == LABELS[0])
       {
         //runTime.reset();
+        //moveForward();
         telemetry.addData("Robot is moving left: ", 1000);
         telemetry.update();
         moveForward(power);
