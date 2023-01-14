@@ -29,8 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -40,24 +40,52 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-@TeleOp(name = "Concept: TensorFlow Object Detection", group = "Concept")
-public class ConceptTensorFlowObjectDetection extends LinearOpMode
+/**
+ * This 2022-2023 OpMode illustrates the basics of using the TensorFlow Object Detection API to
+ * determine which image is being presented to the robot.
+ *
+ * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
+ * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
+ *
+ * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
+ * is explained below.
+ */
+@Autonomous(name = "Concept: PowerplayObjectDetectionTFOD", group = "Concept")
+public class PowerplayObjectDetectionTFOD extends LinearOpMode
 {
   
-  private static final String TFOD_MODEL_ASSET = "model_unquant.tflite";
+  /*
+   * Specify the source for the Tensor Flow Model.
+   * If the TensorFlowLite object model is included in the Robot Controller App as an "asset",
+   * the OpMode must to load it using loadModelFromAsset().  However, if a team generated model
+   * has been downloaded to the Robot Controller's SD FLASH memory, it must to be loaded using loadModelFromFile()
+   * Here we assume it's an Asset.    Also see method initTfod() below .
+   */
+  private static final String TFOD_MODEL_ASSET = "PowerPlay.tflite";
+  // private static final String TFOD_MODEL_FILE  = "/sdcard/FIRST/tflitemodels/CustomTeamModel.tflite";
+  
   
   private static final String[] LABELS = {
-    "1: Square",
-    "2: Triangle",
-    "3: Circle"
+    "1 Bolt",
+    "2 Bulb",
+    "3 Panel"
   };
   
-  WebcamName webcamName;
-  private static final String LABEL_FIRST_ELEMENT = "Square";
-  private static final String LABEL_SECOND_ELEMENT = "Triangle";
-  private static final String LABEL_THIRD_ELEMENT = "Circle";
-  
-  //private static final String VUFORIA_KEY = "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
+  /*
+   * IMPORTANT: You need to obtain your own license key to use Vuforia. The string below with which
+   * 'parameters.vuforiaLicenseKey' is initialized is for illustration only, and will not function.
+   * A Vuforia 'Development' license key, can be obtained free of charge from the Vuforia developer
+   * web site at https://developer.vuforia.com/license-manager.
+   *
+   * Vuforia license keys are always 380 characters long, and look as if they contain mostly
+   * random data. As an example, here is a example of a fragment of a valid key:
+   *      ... yIgIzTqZ4mWjk9wd3cZO9T1axEqzuhxoGlfOOI2dRzKS4T0hQ8kT ...
+   * Once you've obtained a license key, copy the string from the Vuforia web site
+   * and paste it in to your code on the next line, between the double quotes.
+   */
+  private static final String VUFORIA_KEY =
+    "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
+  ;
   
   /**
    * {@link #vuforia} is the variable we will use to store our instance of the Vuforia
@@ -76,12 +104,6 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
   {
     // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
     // first.
-  
-    webcamName = hardwareMap.get(WebcamName.class, "Webcam");
-    telemetry.addData("WebCam", webcamName.getSerialNumber());
-    telemetry.update();
-  
-  
     initVuforia();
     initTfod();
   
@@ -92,6 +114,7 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
     if (tfod != null)
     {
       tfod.activate();
+  
       // The TensorFlow software will scale the input images from the camera to a lower resolution.
       // This can result in lower detection accuracy at longer distances (> 55cm or 22").
       // If your target is at distance greater than 50 cm (20") you can increase the magnification value
@@ -140,67 +163,28 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
     }
   }
   
-  private void initVuforia()
-  {
-    /*
-     * To start up Vuforia, tell it the view that we wish to use for camera monitor (on the RC phone);
-     * If no camera monitor is desired, use the parameterless constructor instead (commented out below).
-     */
-    int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-      "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-    
-    // VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
-    VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-    
-    //WebcamName
-    parameters.vuforiaLicenseKey = "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
-    parameters.cameraName = webcamName;
-    parameters.useExtendedTracking = false;
-    
-    //  Instantiate the Vuforia engine
-    vuforia = ClassFactory.getInstance().createVuforia(parameters);
-  }
-  
-  /*
-   * Initialize the Tensor Flow Object Detection engine.
-   */
-  private void initTfod()
-  {
-    int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-      "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-    
-    // init with monitor scree
-    TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-    
-    // init with no monitor screen
-    // TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters();
-    
-    // set the minimumConfidence to a higher percentage to be more selective when identifying objects.
-    tfodParameters.minResultConfidence = (float) 0.75;
-  
-    tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-    tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT, LABEL_THIRD_ELEMENT);
-  }
   /**
    * Initialize the Vuforia localization engine.
    */
-  /*private void initVuforia() {
-   *//*
- * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
- *//*
+  private void initVuforia()
+  {
+    /*
+     * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+     */
     VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
     
     parameters.vuforiaLicenseKey = VUFORIA_KEY;
-    parameters.cameraDirection = CameraDirection.BACK;
+    parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
     
     //  Instantiate the Vuforia engine
     vuforia = ClassFactory.getInstance().createVuforia(parameters);
   }
   
-  *//**
- //* Initialize the TensorFlow Object Detection engine.
- // *//*
-  private void initTfod() {
+  /**
+   * Initialize the TensorFlow Object Detection engine.
+   */
+  private void initTfod()
+  {
     int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
       "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
     TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
@@ -213,6 +197,5 @@ public class ConceptTensorFlowObjectDetection extends LinearOpMode
     // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
     tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
     // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
-  }*/
+  }
 }
-

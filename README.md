@@ -46,21 +46,47 @@ For technical questions regarding the Control System or the FTC SDK, please visi
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[FIRST Tech Challenge Community](https://ftc-community.firstinspires.org/)
 
 ### Sample OpModes
-This project contains a large selection of Sample OpModes (robot code examples) which can be cut and pasted into your /teamcode folder to be used as-is, or modified to suit your team's needs.
 
-Samples Folder: &nbsp;&nbsp; [/FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples](FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples)
+This project contains a large selection of Sample OpModes (robot code examples) which can be cut and
+pasted into your /teamcode folder to be used as-is, or modified to suit your team's needs.
 
-The readme.md file located in the [/TeamCode/src/main/java/org/firstinspires/ftc/teamcode](TeamCode/src/main/java/org/firstinspires/ftc/teamcode) folder contains an explanation of the sample naming convention, and instructions on how to copy them to your own project space.
+Samples Folder:
+&nbsp;&nbsp; [/FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples](FtcRobotController/src/main/java/org/firstinspires/ftc/robotcontroller/external/samples)
+
+The readme.md file located in
+the [/TeamCode/src/main/java/org/firstinspires/ftc/teamcode](TeamCode/src/main/java/org/firstinspires/ftc/teamcode)
+folder contains an explanation of the sample naming convention, and instructions on how to copy them
+to your own project space.
 
 # Release Information
+
+## Version 8.1.1 (20221201-150726)
+
+This is a bug fix only release to address the following four issues.
+
+* [Issue #495](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/495) - Can't create
+  new blocks opmodes.
+* [Issue #492](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/492) - Remove the
+  final modifier from the OpMode's Telemetry object.
+* [Issue #500](https://github.com/FIRST-Tech-Challenge/FtcRobotController/issues/500) - Some devices
+  cannot be configured when the Driver Station app has been updated to 8.1
+    * Updating either the Robot Controller app or the Driver Station app to 8.1.1 or later will fix
+      this issue.
+* The Modern Robotics touch sensor was configurable as a Digital Device. It can only be used as an
+  Analog Device.
 
 ## Version 8.1 (20221121-115119)
 
 ### Breaking Changes
-* Deprecates the `OpMode` fields `msStuckDetectInit`, `msStuckDetectInitLoop`, `msStuckDetectStart`, `msStuckDetectLoop`, and `msStuckDetectStop`.
-    * Op Modes no longer have a time limit for `init()`, `init_loop()`, `start()` or `loop()`, so the fields corresponding to those methods are no longer used.
-    * `stop()` still has a time limit, but it is now hardcoded to be 1 second, and cannot be changed using `msStuckDetectStop`.
-* Deprecates the `OpMode` methods `internalPreInit()`, `internalPostInitLoop()`, and `internalPostLoop()`.
+
+* Deprecates the `OpMode` fields `msStuckDetectInit`, `msStuckDetectInitLoop`, `msStuckDetectStart`
+  , `msStuckDetectLoop`, and `msStuckDetectStop`.
+    * Op Modes no longer have a time limit for `init()`, `init_loop()`, `start()` or `loop()`, so
+      the fields corresponding to those methods are no longer used.
+    * `stop()` still has a time limit, but it is now hardcoded to be 1 second, and cannot be changed
+      using `msStuckDetectStop`.
+* Deprecates the `OpMode` methods `internalPreInit()`, `internalPostInitLoop()`,
+  and `internalPostLoop()`.
     * Iterative `OpMode`s will continue to call these methods in case they were overridden.
     * These methods will not be called at all for `LinearOpMode`s.
 * Deprecates (and stops respecting) `DeviceProperties.xmlTagAliases`.
