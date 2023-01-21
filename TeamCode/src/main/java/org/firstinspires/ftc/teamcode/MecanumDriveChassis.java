@@ -36,7 +36,6 @@ public class MecanumDriveChassis
   // controlled by the error signal from the heading PID
   private static double rotationalSpeed = 0;
   
-
   
   // Robot speed scaling factor (% of joystick input to use)
   // applied uniformly across all joystick inputs to the JoystickToMotion() method.
@@ -61,12 +60,14 @@ public class MecanumDriveChassis
     leftRearDrive = hardwareMap.get(DcMotor.class, "lRear");
     rightFrontDrive = hardwareMap.get(DcMotor.class, "rFront");
     rightRearDrive = hardwareMap.get(DcMotor.class, "rRear");
-    
+  
     leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     leftRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    
+  
+    RunWithoutEncoders();
+  
     // Motors on one side reversed to drive forward
     // Reverse the motor that runs backwards when connected directly to the battery
     // A positive power number should drive the robot forward regardless of the motor's
@@ -76,7 +77,6 @@ public class MecanumDriveChassis
     rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
     rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
     
-    RunUsingEncoders();
     
     // set motion parameters.
     vD = 0;
@@ -134,16 +134,17 @@ public class MecanumDriveChassis
   
     if (!goFast)
     {
-      vD = (.0875 * vD);
-      rotationalSpeed = (.275 * rotationalSpeed);
+      vD = (.425 * vD);
+      rotationalSpeed = (.375 * rotationalSpeed);
       telemetry.addData("goFast: ", "off");
     } else
     {
-      vD = (.175 * vD);
-      rotationalSpeed = (.325 * rotationalSpeed);
+      vD = (0.85 * vD);
+      rotationalSpeed = (.45 * rotationalSpeed);
     }
-    
+  
     telemetry.addData("Theta(Degrees)", thetaD);
+    telemetry.addData("vD", vD);
     // Math out what to send to the motors and send it.
     PowerToWheels();
   }
@@ -246,43 +247,43 @@ public class MecanumDriveChassis
         rightRearDrive.setPower(0);
         Thread.sleep(5);
       }
-    
+  
       if (currentRightRearSpeed < 0 && rightRearDriveSpeed > 0)
       {
         rightRearDrive.setPower(0);
         Thread.sleep(5);
       }
-    
+  
       if (currentLeftRearSpeed > 0 && leftRearDriveSpeed < 0)
       {
         leftRearDrive.setPower(0);
         Thread.sleep(5);
       }
-    
+  
       if (currentLeftRearSpeed < 0 && leftRearDriveSpeed > 0)
       {
         leftRearDrive.setPower(0);
         Thread.sleep(5);
       }
-    
+  
       if (currentLeftFrontSpeed > 0 && leftFrontDriveSpeed < 0)
       {
         leftFrontDrive.setPower(0);
         Thread.sleep(5);
       }
-    
+  
       if (currentLeftFrontSpeed < 0 && leftFrontDriveSpeed > 0)
       {
         leftFrontDrive.setPower(0);
         Thread.sleep(5);
       }
-    
+  
       if (currentRightFrontSpeed > 0 && rightFrontDriveSpeed < 0)
       {
         rightFrontDrive.setPower(0);
         Thread.sleep(5);
       }
-    
+  
       if (currentRightFrontSpeed < 0 && rightFrontDriveSpeed > 0)
       {
         rightFrontDrive.setPower(0);
@@ -301,11 +302,11 @@ public class MecanumDriveChassis
   }
   
   
-  void RunUsingEncoders()
+  void RunWithoutEncoders()
   {
-    leftFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    leftRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    rightFrontDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    rightRearDrive.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    leftFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    leftRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    rightFrontDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    rightRearDrive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
   }
 }

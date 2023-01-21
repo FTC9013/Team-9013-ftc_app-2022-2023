@@ -19,23 +19,24 @@ public class ArmControl
     
     
     armMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-    
-    
+  
+  
     // Motors on one side reversed to drive forward
     // Reverse the motor that runs backwards when connected directly to the battery
     // A positive power number should drive the robot forward regardless of the motor's position on the robot.
     armMotor.setDirection(DcMotor.Direction.REVERSE);
-    
+  
     armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
   }
   
-  public void raise()
+  
+  public void lower()
   {
     armMotor.setPower(-0.6);
     telemetry.addData("Raising", "True");
   }
   
-  public void lower()
+  public void raise()
   {
     armMotor.setPower(0.6);
     telemetry.addData("Lowering", "True");

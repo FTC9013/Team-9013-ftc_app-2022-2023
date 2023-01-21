@@ -27,11 +27,13 @@ public class TeleOpPrimary extends LinearOpMode
     waitForStart();
     runtime.reset();
   
+  
     // run until the end of the match (driver presses STOP)
     while (opModeIsActive())
     {
       telemetry.addData("LStickY", gamepad1.left_stick_y * -1);
       telemetry.addData("LStickX", gamepad1.left_stick_x);
+      telemetry.addData("vD: ", 1000);
       telemetry.update();
   
       driveChassis.drive(gamepad1.left_stick_y, gamepad1.left_stick_x,
@@ -50,10 +52,10 @@ public class TeleOpPrimary extends LinearOpMode
   
       if (gamepad2.left_stick_y > 0.2)
       {
-        armcontrol.raise();
+        armcontrol.lower();
       } else if (gamepad2.left_stick_y < -0.2)
       {
-        armcontrol.lower();
+        armcontrol.raise();
       } else
       {
         armcontrol.stop();
