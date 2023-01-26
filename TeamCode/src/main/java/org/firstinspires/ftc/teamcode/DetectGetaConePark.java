@@ -28,12 +28,8 @@ public class DetectGetaConePark extends LinearOpMode
   
   private double threshold = 0.85;
   
-  private static final String VUFORIA_KEY =
-    "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY" +
-      "/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn" +
-      "92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+" +
-      "34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2" +
-      "99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
+  private static final String VUFORIA_KEY = "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
+  
   
   private VuforiaLocalizer vuforia;
   private TFObjectDetector tfod;
@@ -214,12 +210,12 @@ public class DetectGetaConePark extends LinearOpMode
     autoarm.stop();
   }
   
-  public void lower(double runDuration)
+  public void lower(double lowerDuration)
   {
     runTime.reset();
     autoarm.lower();
     
-    while (opModeIsActive() && runTime.time() < runDuration)
+    while (opModeIsActive() && runTime.time() < lowerDuration)
     {
       //Do nothing. Allows the motors to spin
     }
@@ -227,9 +223,8 @@ public class DetectGetaConePark extends LinearOpMode
     autoarm.stop();
   }
   
-  private void drop()
+  private void drop(double gripperDuration)
   {
-    double gripperDuration = 0.5;
     runTime.reset();
     autogripper.pushOut();
     
@@ -272,6 +267,7 @@ public class DetectGetaConePark extends LinearOpMode
     waitForStart();
     
     String label = null;
+    moveForward(75);
     raise(1.25);
     if (opModeIsActive())
     {
@@ -315,41 +311,32 @@ public class DetectGetaConePark extends LinearOpMode
           }
         }
       }
-      
+  
       telemetry.addData("We have recognized the image!", label);
       telemetry.update();
-      
+  
+      lower(0.75);
+      moveForward(1175);
+      moveRight(450);
+      raise(2);
+      moveForward(300);
+      sleep(2000);
+      lower(1);
+      drop(1);
+      moveBack(325);
+  
       if (label == LABELS[0])
       {
         telemetry.addData("Robot is supposed to move Left: ", 1000);
-        moveForward(1250);
-        moveLeft(625);
-        raise(0.75);
-        moveForward(100);
-        drop();
-        moveBack(100);
-        moveLeft(625);
+        moveLeft(1700);
       } else if (label == LABELS[1])
       {
         telemetry.addData("Robot is supposed to move Forward", 1000);
-        telemetry.update();
-        moveForward(1250);
-        moveRight(625);
-        raise(1.5);
-        moveForward(100);
-        drop();
-        moveBack(100);
-        moveLeft(625);
+        moveLeft(550);
       } else if (label == LABELS[2])
       {
         telemetry.addData("Robot is supposed to move Right: ", 1000);
-        moveForward(1250);
-        moveRight(625);
-        raise(1.5);
-        moveForward(100);
-        drop();
-        moveBack(100);
-        moveRight(625);
+        moveRight(650);
       }
     }
   }

@@ -13,8 +13,8 @@ import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 
 import java.util.List;
 
-@Autonomous(name = "Concept: DetectandMove", group = "Concept")
-public class DetectandMove extends LinearOpMode
+@Autonomous(name = "Concept: InvertedDetectGetaConePark", group = "Concept")
+public class InvertedDetectGetaConePark extends LinearOpMode
 {
   private ElapsedTime runTime = new ElapsedTime();
   double power = 0.4;
@@ -26,12 +26,16 @@ public class DetectandMove extends LinearOpMode
     "3 Panel"
   };
   
+  private double threshold = 0.85;
+  
+  private static final String VUFORIA_KEY = "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
+  
+  
   private VuforiaLocalizer vuforia;
   private TFObjectDetector tfod;
   private ArmControl autoarm;
+  private GripperControl autogripper;
   
-  
-  private double threshold = 75;
   
   private void initTfod()
   {
@@ -42,7 +46,6 @@ public class DetectandMove extends LinearOpMode
     tfodParameters.isModelTensorFlow2 = true;
     tfodParameters.inputSize = 300;
     tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-    
     // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
     // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
     tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
@@ -62,34 +65,39 @@ public class DetectandMove extends LinearOpMode
     vuforia = ClassFactory.getInstance().createVuforia(parameters);
   }
   
-  private static final String VUFORIA_KEY =
-    "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
-  ;
   Robot robot;
   
-  public void moveRight(double power)
+  public void stopMotor()
+  {
+    robot.leftFront.setPower(0);
+    robot.leftRear.setPower(0);
+    robot.rightFront.setPower(0);
+    robot.rightRear.setPower(0);
+  }
+  
+  public void moveRight(int distance)
   {
     robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     robot.leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     robot.rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-  
-  
+    
+    
     robot.leftFront.setTargetPosition(distance);
     robot.rightFront.setTargetPosition(-distance);
     robot.leftRear.setTargetPosition(-distance);
     robot.rightRear.setTargetPosition(distance);
-  
+    
     robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-  
+    
     robot.leftFront.setPower(power);
     robot.leftRear.setPower(power);
     robot.rightFront.setPower(power);
     robot.rightRear.setPower(power);
-  
+    
     while (opModeIsActive() && robot.leftFront.isBusy() && robot.rightFront.isBusy() && robot.leftRear.isBusy() && robot.rightRear.isBusy())
     {
       //Do nothing. Allows the motors to spin
@@ -97,29 +105,61 @@ public class DetectandMove extends LinearOpMode
     stopMotor();
   }
   
-  public void moveLeft(double power)
+  public void moveForward(int distance)
+  {
+    //double runDuration = 1.1;
+    //runTime.reset();
+    robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    robot.leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    robot.rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    
+    
+    robot.leftFront.setTargetPosition(distance);
+    robot.rightFront.setTargetPosition(distance);
+    robot.leftRear.setTargetPosition(distance);
+    robot.rightRear.setTargetPosition(distance);
+    
+    robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    
+    robot.leftFront.setPower(power);
+    robot.leftRear.setPower(power);
+    robot.rightFront.setPower(power);
+    robot.rightRear.setPower(power);
+    
+    while (opModeIsActive() && robot.leftFront.isBusy() && robot.rightFront.isBusy() && robot.leftRear.isBusy() && robot.rightRear.isBusy())
+    {
+      //Do nothing. Allows the motors to spin
+    }
+    stopMotor();
+  }
+  
+  private void moveBack(int distance)
   {
     robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     robot.leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     robot.rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-  
-  
+    
+    
     robot.leftFront.setTargetPosition(-distance);
-    robot.rightFront.setTargetPosition(distance);
-    robot.leftRear.setTargetPosition(distance);
+    robot.rightFront.setTargetPosition(-distance);
+    robot.leftRear.setTargetPosition(-distance);
     robot.rightRear.setTargetPosition(-distance);
-  
+    
     robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-  
+    
     robot.leftFront.setPower(power);
     robot.leftRear.setPower(power);
     robot.rightFront.setPower(power);
     robot.rightRear.setPower(power);
-  
+    
     while (opModeIsActive() && robot.leftFront.isBusy() && robot.rightFront.isBusy() && robot.leftRear.isBusy() && robot.rightRear.isBusy())
     {
       //Do nothing. Allows the motors to spin
@@ -127,9 +167,39 @@ public class DetectandMove extends LinearOpMode
     stopMotor();
   }
   
-  public void raise()
+  
+  public void moveLeft(int distance)
   {
-    double runDuration = 1.25;
+    robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    robot.leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    robot.rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    
+    
+    robot.leftFront.setTargetPosition(-distance);
+    robot.rightFront.setTargetPosition(distance);
+    robot.leftRear.setTargetPosition(distance);
+    robot.rightRear.setTargetPosition(-distance);
+    
+    robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    
+    robot.leftFront.setPower(power);
+    robot.leftRear.setPower(power);
+    robot.rightFront.setPower(power);
+    robot.rightRear.setPower(power);
+    
+    while (opModeIsActive() && robot.leftFront.isBusy() && robot.rightFront.isBusy() && robot.leftRear.isBusy() && robot.rightRear.isBusy())
+    {
+      //Do nothing. Allows the motors to spin
+    }
+    stopMotor();
+  }
+  
+  public void raise(double runDuration)
+  {
     runTime.reset();
     autoarm.raise();
     while (opModeIsActive() && runTime.time() < runDuration)
@@ -140,43 +210,29 @@ public class DetectandMove extends LinearOpMode
     autoarm.stop();
   }
   
-  public void stopMotor()
+  public void lower(double lowerDuration)
   {
-    robot.leftFront.setPower(0);
-    robot.leftRear.setPower(0);
-    robot.rightFront.setPower(0);
-    robot.rightRear.setPower(0);
-  }
-  
-  
-  public void moveForward(double power)
-  {
-    robot.leftFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    robot.rightFront.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    robot.leftRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-    robot.rightRear.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+    runTime.reset();
+    autoarm.lower();
     
-    robot.leftFront.setTargetPosition(distance);
-    robot.rightFront.setTargetPosition(distance);
-    robot.leftRear.setTargetPosition(distance);
-    robot.rightRear.setTargetPosition(distance);
-  
-    robot.leftFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    robot.rightFront.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    robot.leftRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-    robot.rightRear.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-  
-    robot.leftFront.setPower(power);
-    robot.leftRear.setPower(power);
-    robot.rightFront.setPower(power);
-    robot.rightRear.setPower(power);
-  
-    while (opModeIsActive() && robot.leftFront.isBusy() &&
-      robot.rightFront.isBusy() && robot.leftRear.isBusy() && robot.rightRear.isBusy())
+    while (opModeIsActive() && runTime.time() < lowerDuration)
     {
       //Do nothing. Allows the motors to spin
     }
-    stopMotor();
+    telemetry.addData("Lowering", "True");
+    autoarm.stop();
+  }
+  
+  private void drop(double gripperDuration)
+  {
+    runTime.reset();
+    autogripper.pushOut();
+    
+    while (opModeIsActive() && runTime.time() < gripperDuration)
+    {
+      //Do nothing. Allows the motors to spin
+    }
+    autogripper.stop();
   }
   
   @Override
@@ -185,17 +241,18 @@ public class DetectandMove extends LinearOpMode
     robot = new Robot(hardwareMap);
     initVuforia();
     autoarm = new ArmControl(hardwareMap, telemetry);
+    autogripper = new GripperControl(hardwareMap, telemetry);
     initTfod();
-  
-    robot.leftFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    robot.rightFront.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    robot.leftRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-    robot.rightRear.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-  
+    
+    robot.leftFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    robot.rightFront.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    robot.leftRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    robot.rightRear.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    
     if (tfod != null)
     {
       tfod.activate();
-  
+      
       // The TensorFlow software will scale the input images from the camera to a lower resolution.
       // This can result in lower detection accuracy at longer distances (> 55cm or 22").
       // If your target is at distance greater than 50 cm (20") you can increase the magnification value
@@ -210,7 +267,8 @@ public class DetectandMove extends LinearOpMode
     waitForStart();
     
     String label = null;
-    raise();
+    moveForward(75);
+    raise(1.25);
     if (opModeIsActive())
     {
       while (opModeIsActive() && label == null)
@@ -223,7 +281,7 @@ public class DetectandMove extends LinearOpMode
           if (updatedRecognitions != null)
           {
             telemetry.addData("# Objects Detected", updatedRecognitions.size());
-  
+            
             // step through the list of recognitions and display image position/size information for each one
             // Note: "Image number" refers to the randomized image orientation/number
             for (Recognition recognition : updatedRecognitions)
@@ -232,14 +290,13 @@ public class DetectandMove extends LinearOpMode
               double row = (recognition.getTop() + recognition.getBottom()) / 2;
               double width = Math.abs(recognition.getRight() - recognition.getLeft());
               double height = Math.abs(recognition.getTop() - recognition.getBottom());
-  
+              
               telemetry.addData("", " ");
-              telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(),
-                recognition.getConfidence() * 100);
+              telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
               telemetry.addData("- Position (Row/Col)", "%.0f / %.0f", row, col);
               telemetry.addData("- Size (Width/Height)", "%.0f / %.0f", width, height);
-  
-              if (recognition.getConfidence() * 100 > threshold) //threshold = 85% Accuracy
+              
+              if (recognition.getConfidence() * 100 > threshold)
               {
                 label = recognition.getLabel();
                 break;
@@ -248,35 +305,40 @@ public class DetectandMove extends LinearOpMode
             telemetry.update();
           } else // no objects are detected
           {
+            //moveFow();
             telemetry.addData("No objects detected. Moving Forward.", 0);
             telemetry.update();
           }
         }
       }
-  
+      
       telemetry.addData("We have recognized the image!", label);
       telemetry.update();
-  
-      if (label == LABELS[0]) //If label is Bolt
+      
+      lower(0.75);
+      moveForward(1175);
+      moveLeft(450);
+      raise(2);
+      moveForward(300);
+      sleep(2000);
+      lower(1);
+      drop(1);
+      moveBack(325);
+      
+      if (label == LABELS[0])
       {
-        telemetry.addData("Robot is moving left: ", 1000);
-        telemetry.update();
-        moveForward(power);
-        moveLeft(power);
-      } else if (label == LABELS[1]) //If label is Bulb
+        telemetry.addData("Robot is supposed to move Left: ", 1000);
+        moveLeft(650);
+      } else if (label == LABELS[1])
       {
-        telemetry.addData("Robot is moving forward", 1000);
-        telemetry.update();
-        moveForward(power);
-      } else if (label == LABELS[2]) //If label is Panel
+        telemetry.addData("Robot is supposed to move Forward", 1000);
+        moveRight(650);
+      } else if (label == LABELS[2])
       {
-        telemetry.addData("Robot is moving right: ", 1000);
-        telemetry.update();
-        moveForward(power);
-        moveRight(power);
+        telemetry.addData("Robot is supposed to move Right: ", 1000);
+        moveRight(1700);
       }
     }
   }
 }
-
 

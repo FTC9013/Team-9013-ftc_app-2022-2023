@@ -14,15 +14,10 @@ public class GripperControl
   
   GripperControl(HardwareMap hardwareMap, Telemetry theTelemetry)
   {
-  
     telemetry = theTelemetry;
     // Initialize the hardware variables
     gripperMotor = hardwareMap.get(DcMotor.class, "gripper");
-  
-  
     gripperMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-  
-  
     // Motors on one side are reversed to drive forward
     // Reverse the motor that runs backwards when connected directly to the battery
     // A positive power number should drive the robot forward regardless of the motor's position on the robot
@@ -31,25 +26,22 @@ public class GripperControl
     gripperMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
   }
   
-  public void pullIn()
+  public void pushOut()
   {
     gripperMotor.setPower(-0.3);
     telemetry.addData("Pulling in", "True");
   }
   
-  public void pushOut()
+  public void pullIn()
   {
     gripperMotor.setPower(0.05);
     telemetry.addData("Pushing Out", "True");
-    ;
   }
-  
   
   public void stop()
   {
     gripperMotor.setPower(0);
   }
-  
 }
 
 

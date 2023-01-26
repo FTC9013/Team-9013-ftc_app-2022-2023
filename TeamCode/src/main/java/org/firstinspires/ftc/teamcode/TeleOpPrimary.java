@@ -7,27 +7,22 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name = "Primary Tele-Op", group = "Linear Opmode")
 public class TeleOpPrimary extends LinearOpMode
 {
-  
   private final ElapsedTime runtime = new ElapsedTime();
-  // a timer for the various automation activities.
   
+  // a timer for the various automation activities.
   @Override
   public void runOpMode()
   {
     telemetry.addData("Status", "Initialized");
     telemetry.update();
-  
     // setup a instance of our drive system
     // Declare OpMode members.
     MecanumDriveChassis driveChassis = new MecanumDriveChassis(hardwareMap, telemetry);
     GripperControl gripperControl = new GripperControl(hardwareMap, telemetry);
     ArmControl armcontrol = new ArmControl(hardwareMap, telemetry);
-  
     // Wait for the game to start (driver presses PLAY)
     waitForStart();
     runtime.reset();
-  
-  
     // run until the end of the match (driver presses STOP)
     while (opModeIsActive())
     {
@@ -41,10 +36,10 @@ public class TeleOpPrimary extends LinearOpMode
   
       if (gamepad2.x)
       {
-        gripperControl.pushOut();
+        gripperControl.pullIn();
       } else if (gamepad2.a)
       {
-        gripperControl.pullIn();
+        gripperControl.pushOut();
       } else
       {
         gripperControl.stop();

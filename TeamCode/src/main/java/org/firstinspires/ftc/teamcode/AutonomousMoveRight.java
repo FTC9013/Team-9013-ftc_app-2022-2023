@@ -8,7 +8,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @Autonomous(name = "AutonomousMoveRight", group = "Concept")
 public class AutonomousMoveRight extends LinearOpMode
 {
-  // parameters.vuforiaLicenseKey = "ARz9Amr/////AAABmYnSycXqUkWZnTYbwDDfN5UDwEVORM6bykVMZjVch379D2K5QmoGTKd6jIw5efHY/XidkyYa93qUXRJCONKDuM1kuf5QtvcmeP/8mzMc9MCcqOIcfrURP1dhdtgXJuValhUhGcmem2+lKSIjWn92qkEv+6CRcwgI/BpFKlUAJ1cewCGb5K/2c+CRAdbMhbDtDFWhOkKuRBX9wb0GtR+X8SjH+O4qqLCJIipUF+34ITAYZifsXe+1jALmQqkck/hGgp5fsErEqXsPp7OxeDvwE3f5ecTOVYnBs1ZbjxmmmsS6PbUdAuHuahutptW2d99LbfpW1peOwWXGAKqzJ+v9k/7KzYWTKp33aqjeTC0KO9lO";
   private ElapsedTime runTime = new ElapsedTime();
   Robot robot;
   
@@ -79,19 +78,10 @@ public class AutonomousMoveRight extends LinearOpMode
   
   public void moveRight(double power)
   {
-    /*
-    robot.leftFront.setTargetPosition(distance);
-    robot.rightFront.setTargetPosition(-distance);
-    robot.leftRear.setTargetPosition(-distance);
-    robot.rightRear.setTargetPosition(distance);
-    */
     robot.leftFront.setPower(power);
     robot.leftRear.setPower(-power);
     robot.rightFront.setPower(-power);
     robot.rightRear.setPower(power);
-    /*
-    while (robot.leftFront.isBusy() && robot.rightFront.isBusy() && robot.leftRear.isBusy() && robot.rightRear.isBusy())
-    {*/
   }
 }
 

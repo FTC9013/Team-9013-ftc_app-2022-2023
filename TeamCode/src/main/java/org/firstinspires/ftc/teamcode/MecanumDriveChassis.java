@@ -11,7 +11,6 @@ import java.util.List;
 
 public class MecanumDriveChassis
 {
-  
   private final DcMotor leftFrontDrive;
   private final DcMotor leftRearDrive;
   private final DcMotor rightFrontDrive;
@@ -21,32 +20,23 @@ public class MecanumDriveChassis
   private static double leftRearDriveSpeed;
   private static double rightFrontDriveSpeed;
   private static double rightRearDriveSpeed;
-  
   // Robot speed [-1, 1].  (speed in any direction that is not rotational)
   // does not have any angular component, just scaler velocity.
   // combined with the angular component for motion.  Even if angle is 0 (forward).
   private static double vD = 0;
-  
   // Robot angle while moving [0, 2PI] or [0, +/-PI]. (angle to displace the center of the bot,
   // ASDF)
   // relative to the direction the bot is facing.
   private static double thetaD = 0;
-  
   // Speed component for rotation about the Z axis. [-x, x]
   // controlled by the error signal from the heading PID
   private static double rotationalSpeed = 0;
-  
-  
   // Robot speed scaling factor (% of joystick input to use)
   // applied uniformly across all joystick inputs to the JoystickToMotion() method.
-  
-  
   // number of encoder counts equal to one inch of forward travel
   //  private final int countsPerDriveInch = 5000/117;
-  
   // number of encoder counts equal to one inch of forward travel
   //  private  final int countsPerStrafeInch = 5000/51;
-  
   private final Telemetry telemetry;
   
   MecanumDriveChassis(HardwareMap hardwareMap, Telemetry theTelemetry)
@@ -67,7 +57,6 @@ public class MecanumDriveChassis
     rightRearDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
   
     RunWithoutEncoders();
-  
     // Motors on one side reversed to drive forward
     // Reverse the motor that runs backwards when connected directly to the battery
     // A positive power number should drive the robot forward regardless of the motor's
@@ -76,13 +65,10 @@ public class MecanumDriveChassis
     leftRearDrive.setDirection(DcMotor.Direction.REVERSE);
     rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
     rightRearDrive.setDirection(DcMotor.Direction.FORWARD);
-    
-    
     // set motion parameters.
     vD = 0;
     thetaD = 0;
     rotationalSpeed = 0;
-    
     // Set all the motor speeds.
     rightFrontDriveSpeed = 0;
     leftFrontDriveSpeed = 0;
@@ -93,19 +79,15 @@ public class MecanumDriveChassis
     leftFrontDrive.setPower(leftFrontDriveSpeed);
     rightRearDrive.setPower(rightRearDriveSpeed);
     leftRearDrive.setPower(leftRearDriveSpeed);
-  
-  
     // create and initialize the PID for the heading
     // PID for the heading
     double propCoeff = 0.9;
     double integCoeff = 0.0;
     double diffCoeff = 0.00;
     PID headingPID = new PID(propCoeff, integCoeff, diffCoeff);
-  
     // set initial desired heading to the current actual heading.
     // heading about a unit circle in radians.
     // rotates about the Z axis [0,2PI) rad.
-  
     // initially setup the PID parameters
     double outputLowLimit = -1;
     double outputHighLimit = 1;
@@ -127,7 +109,6 @@ public class MecanumDriveChassis
   // Right X = rotate in place
   void drive(float driveLeftY, float driveLeftX, float driveRightX, boolean goFast)
   {
-  
     // calculate the vectors multiply input values by scaling factor for max speed.
     joystickToMotion(driveLeftY, driveLeftX,
       driveRightX);
@@ -154,7 +135,6 @@ public class MecanumDriveChassis
     // determines the translation speed by taking the hypotenuse of the vector created by
     // the X & Y components.
     vD = Math.min(Math.sqrt(Math.pow(leftStickX, 2) + Math.pow(-leftStickY, 2)), 1);
-    
     // Converts the joystick inputs from cartesian to polar from 0 to +/- PI oriented
     // with 0 to the right of the robot. (standard polar plot)
     thetaD = Math.atan2(-leftStickY, leftStickX);
@@ -166,7 +146,6 @@ public class MecanumDriveChassis
     // which is opposite of what PowerToWheels() wants in polar positive rotation (CCW).
     rotationalSpeed = rightStickX;
   }
-  
   
   private void PowerToWheels()
   {
@@ -218,17 +197,14 @@ public class MecanumDriveChassis
       rightRearDriveSpeed = 0;
     }
   
-  
     leftFrontDriveSpeed += rotationalSpeed;
     rightFrontDriveSpeed -= rotationalSpeed;
     leftRearDriveSpeed += rotationalSpeed;
     rightRearDriveSpeed -= rotationalSpeed;
-  
     // place all the power numbers in a list for collection manipulations
     // (easier to find min / max etc when in a list)
     List<Double> speeds = Arrays.asList(rightFrontDriveSpeed,
       leftFrontDriveSpeed, rightRearDriveSpeed, leftRearDriveSpeed);
-  
     // scales the motor powers while maintaining power ratios.
     double minPower = Collections.min(speeds);
     double maxPower = Collections.max(speeds);
@@ -292,7 +268,6 @@ public class MecanumDriveChassis
     } catch (InterruptedException e)
     {
     }
-  
     // must be same order as placed in the list
     // send the speeds to the motors
     rightFrontDrive.setPower(speeds.get(0));
@@ -300,7 +275,6 @@ public class MecanumDriveChassis
     rightRearDrive.setPower(speeds.get(2));
     leftRearDrive.setPower(speeds.get(3));
   }
-  
   
   void RunWithoutEncoders()
   {
